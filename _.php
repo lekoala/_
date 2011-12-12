@@ -18,6 +18,12 @@ class _ {
 	 * @var array
 	 */
 	static $template_vars = array();
+	
+	/**
+	 * Globally accessible data 
+	 * @var array
+	 */
+	static $registry = array();
 
 	/**
 	 * Prefix appended before a template in render method
@@ -305,9 +311,17 @@ class _ {
 	}
 
 	/**
+	 * Load a config file
+	 * @param string $file 
+	 */
+	static function config_load($file) {
+		
+	}
+	
+	/**
 	 * Examine dev et test settings and set the env
 	 */
-	public static function set_env_from_config() {
+	static function config_env() {
 		$ip = self::real_ip();
 		if (in_array($ip, self::$dev_servers)) {
 			self::$env = 'dev';
@@ -346,7 +360,7 @@ class _ {
 		}
 
 		$filename = self::$template_prefix . $filename;
-		$ext = self::get_file_extension($filename);
+		$ext = self::file_extension($filename);
 		if (empty($ext)) {
 			$filename .= '.' . self::$template_default_extension;
 		}
@@ -376,7 +390,7 @@ class _ {
 	 * @param boolean $strict
 	 * @param boolean $utf8 
 	 */
-	static function configure($timezone = 'Europe/Brussels', $strict = true, $utf8 = true) {
+	static function config_php($timezone = 'Europe/Brussels', $strict = true, $utf8 = true) {
 		date_default_timezone_set($timezone);
 		if ($strict) {
 			error_reporting(E_ALL | E_STRICT);
@@ -427,8 +441,8 @@ class _ {
 			'critical' => 500,
 			'alert' => 550,
 		);
-
-		if(in_array($level, $levels)) {
+		
+		if(in_array($level, array_keys($levels))) {
 			$level_int = $levels[$level];
 		}
 		else {
@@ -514,8 +528,8 @@ class _ {
 
 		//memory
 		if (isset($stats['start_memory_usage'])) {
-			$memory_usage = self::format_bytes(memory_get_usage(true) - $stats['start_memory_usage']);
-			$memory_peak = self::format_bytes(memory_get_peak_usage(true));
+			$memory_usage = self::file_size(memory_get_usage(true) - $stats['start_memory_usage']);
+			$memory_peak = self::file_size(memory_get_peak_usage(true));
 			$elements[] = 'Memory usage : ' . $memory_usage;
 			$elements[] = 'Memory peak usage : ' . $memory_peak;
 		}
@@ -589,7 +603,7 @@ class _ {
 	 * 
 	 * @return string
 	 */
-	static function request_method() {
+	static function method() {
 		return isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) :
 				(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
 	}
@@ -602,7 +616,7 @@ class _ {
 	 * 
 	 * @return string  The requested URL without the query string
 	 */
-	static function request_url()
+	static function url()
 	{
 		return preg_replace('#\?.*$#D', '', $_SERVER['REQUEST_URI']);
 	}
@@ -635,10 +649,10 @@ class _ {
 		if (session_id() == '') {
 			session_start();
 		}
-
+		
 		$_SESSION[$name] = $value;
 	}
-
+	
 	/**
 	 * Get a message from session
 	 * 
@@ -777,7 +791,7 @@ class _ {
 	 * @param int $precision
 	 * @return string 
 	 */
-	static function format_bytes($size, $precision = 2) {
+	static function file_size($size, $precision = 2) {
 		if ($size <= 0) {
 			return '0B';
 		}
@@ -793,7 +807,7 @@ class _ {
 	 * @param string $str
 	 * @return bool
 	 */
-	static function is_utf8($str) {
+	static function str_is_utf8($str) {
 		return preg_match('%^(?: 
               [\x09\x0A\x0D\x20-\x7E]            # ASCII 
             | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte 
@@ -812,7 +826,7 @@ class _ {
 	 * @param string String to convert
 	 * @return string
 	 */
-	public static function convert_to_utf8($str) {
+	public static function str_to_utf8($str) {
 		return mb_convert_encoding($str, 'UTF-8', mb_detect_encoding($str));
 	}
 
@@ -822,7 +836,7 @@ class _ {
 	 * @param string String to be tested
 	 * @return bool
 	 */
-	public static function is_ascii($str) {
+	public static function str_is_ascii($str) {
 		return!preg_match('/[^\x00-\x7F]/', $str);
 	}
 
@@ -834,7 +848,7 @@ class _ {
 	 * @param string $file
 	 * @return string
 	 */
-	public static function get_file_extension($file) {
+	public static function file_extension($file) {
 		return strtolower(substr(strrchr($file, '.'), 1));
 	}
 
@@ -870,7 +884,7 @@ class _ {
 	 * @param string $content_type (optional) Content type of the file
 	 * @param string $filename (optional) Filename of the download
 	 */
-	public static function force_download($file, $content_type = null, $filename = null) {
+	public static function file_download($file, $content_type = null, $filename = null) {
 		if ($content_type === null) {
 			$content_type = 'application/force-download';
 		}
@@ -891,7 +905,7 @@ class _ {
 	 * @param string $text
 	 * @return string
 	 */
-	static function slugify($text) {
+	static function str_slugify($text) {
 		// replace non letter or digits by -
 		$text = preg_replace('~[^\\pL\d]+~u', '-', $text);
 
@@ -922,7 +936,7 @@ class _ {
 	 * @param int $length
 	 * @return string 
 	 */
-	static function random_string($length = 10) {
+	static function str_random($length = 10) {
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyz';
 		$string = '';
 		for ($p = 0; $p < $length; $p++) {
@@ -939,7 +953,7 @@ class _ {
 	 * @param mixed $default
 	 * @return string 
 	 */
-	static function array_get($array, $index, $default = null) {
+	static function arr_get($array, $index, $default = null) {
 		if (isset($array[$index])) {
 			return $array[$index];
 		}
@@ -987,11 +1001,56 @@ class _ {
 			$input = array_merge($_GET, $_POST);
 		}
 		
-		$val = self::array_get($input, $key, $default);
+		$val = self::arr_get($input, $key, $default);
 		if($filter) {
 			return filter_var($val,$filter);
 		}
-		return filter_var($val,FILTER_SANITIZE_STRING);
+		return filter_var($val,FILTER_SANITIZE_SPECIAL_CHARS);
 	}
+	
+	/**
+	 *
+	 * @param string|array $to
+	 * @param string $subject
+	 * @param string $message
+	 * @param string|array $from
+	 * @param string $headers
+	 * @return Result of the mail function
+	 */
+	static function mail($to, $subject, $message = '', $from = 'robot@underscore.dev', $headers = '') {
+		//Handle arrays
+		if(is_array($to)) {
+			$to = implode(', ', $to);
+		}
+		if(is_array($from)) {
+			$from = $from[0] . ' <' . $from[1] . '>';
+		}
+		if(is_array($headers)) {
+			$headers = implode("\r\n", $headers);
+		}
 
+		// Headers
+		$base_headers  = "From: My site<".$from.">\r\n"; 
+//		$base_headers .= "Reply-To: info@example.com\r\n"; 
+//		$base_headers .= "Return-Path: info@example.com\r\n"; 
+		$base_headers .= "X-Mailer: Underscore\n"; 
+		$base_headers .= 'MIME-Version: 1.0' . "\n"; 
+		$base_headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n"; 
+		
+		// Fix any bare linefeeds in the message to make it RFC821 Compliant. 
+		$message = preg_replace("#(?<!\r)\n#si", "\r\n", $message); 
+
+		// Make sure there are no bare linefeeds in the headers 
+		$headers = preg_replace('#(?<!\r)\n#si', "\r\n", $headers);
+		
+		// Utf8
+		if(!self::str_is_utf8($message)) {
+			$message = self::str_to_utf8($message);
+		}
+		if(!self::str_is_utf8($title)) {
+			$title = self::str_to_utf8($title);
+		}
+		
+		return mail($to, $subject, $message, $headers);
+	}
 }

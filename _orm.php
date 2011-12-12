@@ -73,11 +73,13 @@ class _orm {
 	/**
 	 * Transform an array of conditions to a sql where part
 	 * @param array $where
+	 * @param array $params
 	 * @return string 
 	 */
-	protected static function combine_where(array $where) {
-		array_walk($where, function (&$item, $key) {
-			$item = $key . "=" . $item;
+	protected static function combine_where(array $where, array &$params = array()) {
+		array_walk($where, function (&$item, $key) use (&$params) {
+			$params[':' . $key] = $item;
+			$item = $key . " = :" . $key;
 		});
 		return implode(' AND ', $where);
 	}
@@ -95,7 +97,7 @@ class _orm {
 		$sql = 'SELECT * FROM ' . $table;
 		if($where !== null) {
 			if(is_array($where)) {
-				$where = self::combine_where($where);
+				$where = self::combine_where($where, $params);
 			}
 			$sql .= ' WHERE ' . $where;
 		}
@@ -120,7 +122,7 @@ class _orm {
 		$sql = 'SELECT COUNT(*) FROM ' . $table;
 		if($where !== null) {
 			if(is_array($where)) {
-				$where = self::combine_where($where);
+				$where = self::combine_where($where,$params);
 			}
 			$sql .= ' WHERE ' . $where;
 		}
@@ -133,25 +135,47 @@ class _orm {
 	}
 	
 	/**
-	 * Create the table for this record
-	 * @param bool $drop Drop before
+	 * Scaffold a create statement
+	 * @param bool $execute
 	 * @return type 
 	 */
-	static function create_table($drop = false) {
+	static function create_table($execute = true) {
 		$pdo = self::get_pdo();
 		$table = self::get_table();
 		$primary_key = self::get_primary_key();
 		
 		$properties = get_class_vars(get_called_class());
 		
-		if($drop) {
-			$pdo->exec('DROP TABLE IF EXISTS ' . $table);
+		//all tables
+		$mysql = 'SHOW FULL TABLES';
+		$postgres = 'SELECT * FROM pg_tables';
+		$mssql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+		$sqlite = "SELECT * FROM sqlite_master WHERE type='table'";
+		
+		$all_table_sql = compact('mysql','postgres','mssql','sqlite');
+		$current ;
+		$table_list ;
+		
+		foreach($all_table_sql as $k => $v) {
+			$result = $pdo->query($v);
+			if($result != false) {
+				$current = $k;
+				$table_list = $result->fetchAll();
+			}
 		}
 		
-		$sql = 'CREATE TABLE ' . $table . ' (';
+		$sql = 'CREATE TABLE ' . $table . "(\n";
 		foreach($properties as $prop => $value) {
 			$type = 'VARCHAR(255)';
 			if(strpos($prop, 'id') !== false) {
+				if($current == 'sqlite') {
+					$type = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+				}
+				else {
+					$type = 'INT AUTO_INCREMENT';
+				}
+			}
+			if(strpos($prop, '_id') !== false) {
 				$type = 'INT';
 			}
 			if(strpos($prop, 'is_') === 0) {
@@ -169,13 +193,24 @@ class _orm {
 			if($prop == 'content') {
 				$type = 'TEXT';
 			}
-			$sql .= $prop . ' ' . $type . ",\n";
+			$sql .= "\t" . $prop . ' ' . $type . ",\n";
 		}
-		//primary key
-		$sql .= 'PRIMARY KEY ('.$primary_key.')';
-		$sql .= ')';
 		
-		return $pdo->exec($sql);		
+		//primary key
+		if($current != 'sqlite') {
+			$sql .= ',PRIMARY KEY ('.$primary_key.')';
+		}
+		else {
+			$sql = rtrim($sql, ",\n");
+		}
+		
+		$sql .= "\n)";
+		
+		if($execute) {
+			return $pdo->exec($sql);		
+		}
+		
+		return $sql;
 	}
 
 	/* orm methods */
@@ -292,14 +327,28 @@ class _orm {
 			$params[':' . $primary_key] = $id;
 		} else {
 			if(is_array($id)) {
-				$id = self::combine_where($id);
+				$id = self::combine_where($id, $params);
 			}
 			$sql .= $id;
 		}
-
 		$stmt = $pdo->prepare($sql);
 		$stmt->setFetchMode(PDO::FETCH_INTO, $this);
 		$stmt->execute($params);
 		$stmt->fetch();
+	}
+	
+	/**
+	 * Provide a simple html representation of the record
+	 * @return string 
+	 */
+	function __toString() {
+		$fields = self::get_public_properties($this);
+		
+		$html = '<div class="' . get_called_class() . '">';
+		foreach ($fields as $key => $value) {
+			$html .= "\n" . '<div class="'.$key.'">'.$value.'</div>';
+		}
+		$html .= "\n</div>";
+		return $html;
 	}
 }

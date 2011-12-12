@@ -1,5 +1,11 @@
 /* reset */
 
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section {
+    display: block;
+}
+
+html { overflow-y: scroll; }
+
 html, body, div, form, fieldset, legend, label {
 	margin: 0;
 	padding: 0; 
@@ -19,7 +25,17 @@ h1, h2, h3, h4, h5, h6, th, td, caption { font-weight:normal; }
 
 img { border: 0; }
 
-/* underscore classes */
+nav ul {
+	margin:0;
+	padding: 0;
+	list-style: none;
+}
+
+nav li {
+	float: left;
+}
+
+/* clearfix */
 
 ._cf:after {
 	visibility: hidden;
@@ -32,13 +48,8 @@ img { border: 0; }
 * html ._cf             { height:1%; } /* IE6 */
 *:first-child+html ._cf { min-height: 0; } /* IE7 */
 
-._nav ul {
-	margin:0;
-	padding: 0;
-}
+/* utils */
 
-._nav li {
-	float: left;
-	padding-right:0.5em;
-	margin-right:0.5em;
+._clear {
+	clear:both;
 }
