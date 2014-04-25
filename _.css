@@ -1,55 +1,302 @@
-/* reset */
-
-article, aside, details, figcaption, figure, footer, header, hgroup, nav, section {
-    display: block;
-}
-
-html { overflow-y: scroll; }
-
-html, body, div, form, fieldset, legend, label {
-	margin: 0;
-	padding: 0; 
+/**
+ * Ndrscr php toolkit
+ * ------------------------
+ *  
+ * @author Thomas Portelange <thomas@lekoala.be>
+ * @version 0.1
+ * @licence http://www.opensource.org/licenses/MIT
+ */
+/* mini reset */
+html, body, div, form, fieldset, legend, label, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
 }
 
 table {
-	border-collapse: collapse;
-	border-spacing: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 th, td {
-	text-align: left;
-	vertical-align: top;
+  text-align: left;
+  vertical-align: top;
 }
 
-h1, h2, h3, h4, h5, h6, th, td, caption { font-weight:normal; }
+h1, h2, h3, h4, h5, h6, th, td, caption {
+  font-weight: normal;
+}
 
-img { border: 0; }
+img {
+  border: 0;
+}
 
-nav ul {
-	margin:0;
-	padding: 0;
-	list-style: none;
+/* semantic nav */
+nav ul, nav ol {
+  list-style: none;
+  margin: 0;
 }
 
 nav li {
-	float: left;
+  margin: 0;
+  float: left;
+}
+
+nav a {
+  display: inline-block;
+}
+
+/* html 5 compatibility */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
 }
 
 /* clearfix */
-
-._cf:after {
-	visibility: hidden;
-	display: block;
-	font-size: 0;
-	content: " ";
-	clear: both;
-	height: 0;
+.cf:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
 }
-* html ._cf             { height:1%; } /* IE6 */
-*:first-child+html ._cf { min-height: 0; } /* IE7 */
+
+* html .cf {
+  height: 1%;
+}
+
+*:first-child + html .cf {
+  min-height: 0;
+}
 
 /* utils */
+.clear {
+  clear: both;
+}
 
-._clear {
-	clear:both;
+.s {
+  margin: 10px;
+}
+
+.vs {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.hs {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.fl {
+  float: left;
+}
+
+.fr {
+  float: right;
+}
+
+.ar {
+  text-align: right;
+}
+
+.al {
+  text-align: left;
+}
+
+.lb {
+  background: #fff;
+  min-width: 400px;
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: scroll;
+  padding: 10px;
+  border: 1px solid #eee;
+  -webkit-box-shadow: 0px 0px 5px 5px #666666;
+  -moz-box-shadow: 0px 0px 5px 5px #666666;
+  box-shadow: 0px 0px 5px 5px #666666;
+  display: none;
+}
+
+/* grid */
+.col {
+  overflow: hidden;
+  float: left;
+  display: inline-block;
+}
+
+/* scaffold */
+.scaffold tbl th, .tbl th {
+  background: #333;
+  color: #fff;
+  font-weight: bold;
+  padding: 3px;
+}
+.scaffold tbl td, .tbl td {
+  border-bottom: 1px solid #eee;
+  padding: 3px;
+}
+
+.scaffold form label, .form label {
+  display: block;
+  margin-top: 9px;
+}
+.scaffold form label.inline, .form label.inline {
+  display: inline-block;
+  margin: 3px;
+}
+.scaffold form input.txt, .scaffold form input[type="text"], .scaffold form input[type="password"], .scaffold form textarea, .scaffold form select, .scaffold form button, .form input.txt, .form input[type="text"], .form input[type="password"], .form textarea, .form select, .form button {
+  border: 1px solid #ccc;
+  padding: 3px;
+  margin: 3px;
+}
+.scaffold form input.txt:focus, .scaffold form textarea:focus, .scaffold form select:focus, .form input.txt:focus, .form textarea:focus, .form select:focus {
+  background: #ffffc9;
+}
+.scaffold form fieldset, .form fieldset {
+  border: 0;
+  background: #eee;
+  padding: 10px;
+}
+
+.form-inline label {
+  clear: both;
+  float: left;
+  width: 100px;
+  padding: 3px;
+  margin: 3px;
+  display: inline-block;
+}
+.form-inline input, .form-inline textarea, .form-inline select, .form-inline button {
+  border: 1px solid #ccc;
+  padding: 3px;
+  margin: 3px;
+}
+.form-inline input.txt, .form-inline input[type="text"], .form-inline input[type="password"], .form-inline textarea, .form-inline select {
+  float: left;
+  width: 200px;
+}
+.form-inline input.txt:focus, .form-inline textarea:focus, .form-inline select:focus {
+  background: #ffffc9;
+}
+
+.error {
+  color: #cc0000;
+}
+
+.succes {
+  color: #00cc33;
+}
+
+.info {
+  color: #3399cc;
+}
+
+.warnig {
+  color: #ff9900;
+}
+
+.box {
+  padding: 3px;
+  border: 1px solid;
+}
+
+.box.error {
+  background-color: #ff6666;
+  border-color: red;
+  color: #330000;
+}
+
+.box.success {
+  background-color: #66ff8c;
+  border-color: #00ff40;
+  color: #00330d;
+}
+
+.box.info {
+  background-color: #add6eb;
+  border-color: #5cadd6;
+  color: #143d52;
+}
+
+.box.warning {
+  background-color: #ffd699;
+  border-color: #ffad33;
+  color: #663d00;
+}
+
+/* jgrowl @link https://bitbucket.org/stanlemon/jgrowl/ */
+.jGrowl {
+  z-index: 9999;
+  color: #fff;
+  font-size: 12px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.jGrowl .jGrowl-notification, .jGrowl .jGrowl-closer {
+  background-color: #000;
+  opacity: .85;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
+  zoom: 1;
+  width: 235px;
+  padding: 10px;
+  margin: 10px;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 1em;
+  text-align: left;
+  display: none;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+.jGrowl .jGrowl-notification {
+  min-height: 40px;
+}
+.jGrowl .jGrowl-notification .jGrowl-header {
+  font-weight: bold;
+  font-size: .85em;
+}
+.jGrowl .jGrowl-notification .jGrowl-close {
+  z-index: 99;
+  float: right;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+}
+.jGrowl .jGrowl-closer {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  cursor: pointer;
+  font-size: .9em;
+  font-weight: bold;
+  text-align: center;
+}
+
+body > .jGrowl {
+  position: fixed;
+}
+
+@media print {
+  .jGrowl {
+    display: none;
+  }
+}
+/* compatibility classes */
+.chzn-container-single .chzn-search input {
+  float: none !important;
+}
+
+._form .chzn-container, ._inline-form .chzn-container {
+  margin: 3px;
+}
+
+html.loading-polyfills body {
+  visibility: hidden;
+}
+
+html.long-loading-polyfills {
+  background-image: url("img/polyfill-loader.gif");
+  background-position: center 240px;
+  background-repeat: no-repeat;
 }
