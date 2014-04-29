@@ -114,6 +114,16 @@ class _form {
 		return new _form_textarea($name, $value);
 	}
 
+	/**
+	 * 
+	 * @param type $name
+	 * @param type $value
+	 * @return \_form_file
+	 */
+	public static function file($name = null, $value = null) {
+		return new _form_file($name, $value);
+	}
+
 }
 
 /**
@@ -430,18 +440,17 @@ class _form_daterange extends _form_input {
 	public function set_two_inputs($two_inputs) {
 		$names = array();
 		$values = array();
-		foreach($two_inputs as $k => $v) {
-			if(is_int($k)) {
+		foreach ($two_inputs as $k => $v) {
+			if (is_int($k)) {
 				//we only have names
 				$names[] = $v;
-			}
-			else {
+			} else {
 				$values[] = $v;
 				$names[] = $k;
 			}
 		}
 		$this->two_inputs = $names;
-		if(!empty($values)) {
+		if (!empty($values)) {
 			$this->value($values);
 		}
 		$this->datepicker_options['getValue'] = 'function() { if($(\'#' . $this->id() . '-start\').val() && $(\'#' . $this->id() . '-end\').val()) { return $(\'#' . $this->id() . '-start\').val() + \' - \' + $(\'#' . $this->id() . '-end\').val()} return \'\'; }';
@@ -483,23 +492,23 @@ class _form_daterange extends _form_input {
 		if ($this->two_inputs) {
 			$name_start = $this->two_inputs[0];
 			$name_end = $this->two_inputs[1];
-			
+
 			$attrs = $this->getAttributes();
 			$attrs_start = $attrs_end = $attrs;
 			$attrs_start['id'] .= '-start';
 			$attrs_start['name'] = $name_start;
-			if($attrs['value'] && is_array($attrs['value'])) {
+			if ($attrs['value'] && is_array($attrs['value'])) {
 				$attrs_start['value'] = $attrs['value'][0];
 			}
 			$attrs_end['id'] .= '-end';
 			$attrs_end['name'] = $name_end;
-			if($attrs['value'] && is_array($attrs['value'])) {
+			if ($attrs['value'] && is_array($attrs['value'])) {
 				$attrs_end['value'] = $attrs['value'][1];
 			}
 			$attrsHtmlStart = $this->getAttrsHtml($attrs_start);
 			$attrsHtmlEnd = $this->getAttrsHtml($attrs_end);
 			$tag = $this->tag();
-			$html = '<span id="'.$this->id().'"><' . $tag . $attrsHtmlStart . '/> - ' . '<' . $tag . $attrsHtmlEnd. '/></span>';
+			$html = '<span id="' . $this->id() . '"><' . $tag . $attrsHtmlStart . '/> - ' . '<' . $tag . $attrsHtmlEnd . '/></span>';
 			if ($this->label) {
 				$html = $this->getLabelHtml() . "\n" . $html;
 			}
@@ -681,5 +690,14 @@ class _form_textarea extends _form_input {
 
 	protected $tag = 'textarea';
 	protected $self_closed = false;
+
+}
+
+class _form_file extends _form_input {
+
+	public function __construct($name = null, $value = null) {
+		parent::__construct($name, $value);
+		$this->type('file');
+	}
 
 }
