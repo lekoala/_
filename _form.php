@@ -10,6 +10,68 @@ class _form {
 	public static $use_html5 = false;
 	public static $auto_id = true;
 
+	protected $fields = array();
+	
+	public function __construct($fields = array()) {
+		$this->fields = $fields;
+	}
+	
+	public function render() {
+		$html = '';
+		foreach($this->fields as $f) {
+			$html .= (string) $f;
+		}
+		return $html;
+	}
+	
+	public function __toString() {
+		try {
+			return $this->render();
+		} catch (Exception $ex) {
+			return $ex->getMessage();
+		}
+	}
+	
+	/**
+	 * Set form data
+	 * @param array|object $data
+	 */
+	public function set_data($data) {
+		if(is_object($data)) {
+			if (method_exists($data, 'to_array')) {
+				$data = $data->to_array();
+			}
+			else {
+				$data = get_object_vars($data);
+			}
+		}
+		foreach($data as $k => $v) {
+			$field = $this->get_field($k);
+			if($field) {
+				$field->value($v);
+			}
+		}
+	}
+	
+	public function get_fields() {
+		return $this->fields;
+	}
+	
+	/**
+	 * Get field by name
+	 * 
+	 * @param string $name
+	 * @return _field_element
+	 */
+	public function get_field($name) {
+		foreach($this->fields as $field) {
+			if($field->name() == $name) {
+				return $field;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * @param string $action
 	 * @param string $method
