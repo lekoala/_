@@ -799,11 +799,9 @@ class _orm implements ArrayAccess {
 	/**
 	 * Flatten the record to include virtual properties and remove objects
 	 * 
-
 	 * @return string 
 	 */
 	function flatten() {
-
 		return $this->to_array(true);
 	}
 
@@ -975,10 +973,11 @@ class _orm implements ArrayAccess {
 
 		//transform date object
 		foreach ($this->_original as $k => $v) {
-			preg_match('/(\d{4}-\d{2}-\d{2})/', $v, $date);
-			preg_match('/(\d{2}:\d{2}:\d{2})/', $v, $time);
-			if (count($time) && count($date)) {
-				$this->$k = _datetime::from_datetime($date[0] . ' ' . $time[0]);
+			preg_match('/^(\d{4}-\d{2}-\d{2})$/', $v, $date);
+			preg_match('/^(\d{2}:\d{2}:\d{2})$/', $v, $time);
+			preg_match('/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/', $v, $datetime);
+			if (count($datetime)) {
+				$this->$k = _datetime::from_datetime($datetime[0]);
 			} elseif (count($date)) {
 				$this->$k = _datetime::from_date($date[0]);
 			} elseif (count($time)) {

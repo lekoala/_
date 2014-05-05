@@ -44,7 +44,7 @@ class _table {
 		$this->identifier = $id;
 		return $this;
 	}
-	
+
 	public function get_replace_level() {
 		return $this->replace_level;
 	}
@@ -147,16 +147,16 @@ class _table {
 		$this->actions_mode = $mode;
 		return $this;
 	}
-	
+
 	public function get_form_method() {
 		return $this->form_method;
 	}
-	
+
 	public function set_form_method($v) {
 		$this->form_method = $v;
 		return $this;
 	}
-	
+
 	public function get_columns_width() {
 		return $this->columns_width;
 	}
@@ -166,10 +166,10 @@ class _table {
 		return $this;
 	}
 
-	public function set_column_width($k,$v) {
+	public function set_column_width($k, $v) {
 		$this->columns_width[$k] = $v;
 	}
-	
+
 	protected function format_xml($xml, $spaces = 4, $escape = false) {
 
 		$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml);
@@ -213,11 +213,11 @@ class _table {
 
 	protected function tag($name, $value = null, $attributes = array()) {
 		//allow attr as 2nd element
-		if(is_array($value)) {
+		if (is_array($value)) {
 			$attributes = $value;
 			$value = null;
 		}
-		
+
 		//sub elements
 		$els = explode('>', $name);
 		while (count($els) > 1) {
@@ -314,10 +314,9 @@ class _table {
 				$attr .= ' ' . $k . '="' . $v . '"';
 			}
 			$attr = str_replace('$', $i, $attr);
-			if($value) {
+			if ($value) {
 				$str .= '<' . $name . $attr . '>' . $value . '</' . $name . '>';
-			}
-			else {
+			} else {
 				$str .= '<' . $name . $attr . ' />';
 			}
 		}
@@ -359,10 +358,10 @@ class _table {
 			}
 			foreach ($this->headers as $header) {
 				$width = null;
-				if(isset($this->columns_width[$header])) {
+				if (isset($this->columns_width[$header])) {
 					$width = $this->columns_width[$header];
 				}
-				$headers .= $this->tag('th', $header,array(
+				$headers .= $this->tag('th', $header, array(
 					'width' => $width
 				));
 			}
@@ -431,7 +430,7 @@ class _table {
 				$this->html .= $selectable_actions;
 			}
 
-			$this->html = $this->tag('form[name=tableform' . self::$instances . '][method='.$this->form_method.']', $this->html);
+			$this->html = $this->tag('form[name=tableform' . self::$instances . '][method=' . $this->form_method . ']', $this->html);
 		}
 
 		//pagination
@@ -473,7 +472,7 @@ SCRIPT;
 			$searchable_headers .= $this->tag('th');
 		}
 		$global = $_GET;
-		if($this->form_method == 'post') {
+		if ($this->form_method == 'post') {
 			$global = $_POST;
 		}
 		foreach ($headers_keys as $header) {
@@ -481,10 +480,10 @@ SCRIPT;
 			if (in_array($header, $this->searchable_headers)) {
 				$value = isset($global[$this->searchable_key][$header]) ? $global[$this->searchable_key][$header] : null;
 				$width = 'auto';
-				if(isset($this->columns_width[$header])) {
+				if (isset($this->columns_width[$header])) {
 					$width = $this->columns_width[$header] . 'px';
 				}
-				$input = '<input name="' . $this->searchable_key . '[' . $header . ']" value="' . $value . '" style="width:'.$width.'" />';
+				$input = '<input name="' . $this->searchable_key . '[' . $header . ']" value="' . $value . '" style="width:' . $width . '" />';
 			}
 			$searchable_headers .= $this->tag('th', $input);
 		}
@@ -530,7 +529,7 @@ SCRIPT;
 	protected function make_selectable_actions() {
 		foreach ($this->selectable_actions as $action => $value) {
 			if (is_int($action)) {
-				if($value instanceof _form_element) {
+				if ($value instanceof _form_element) {
 					$actions[] = $value;
 					continue;
 				}
@@ -540,7 +539,7 @@ SCRIPT;
 			$class = 'btn btn-default';
 			$type = 'submit';
 			$name = 'action[' . $action . ']';
-			$btn = $this->tag('input',compact('type', 'class','name','value'));
+			$btn = $this->tag('input', compact('type', 'class', 'name', 'value'));
 			$actions[] = $btn;
 		}
 		$actions = implode('', $actions);
@@ -552,11 +551,11 @@ SCRIPT;
 			$actions = array();
 			foreach ($this->actions as $action => $label) {
 				$arr = array();
-				
-				if(is_array($label)) {
+
+				if (is_array($label)) {
 					$arr = $label;
 				}
-				
+
 				//param was array('delete')
 				if (is_int($action) && is_string($label)) {
 					$action = $label;
@@ -564,26 +563,27 @@ SCRIPT;
 				}
 				//param was array('delete' => 'Delete me')
 				else {
-					if(is_string($label)) {
+					if (is_string($label)) {
 						$arr['label'] = $label;
 					}
 				}
-				
-				if(strpos($action, '!') !== false) {
+
+				if (strpos($action, '!') !== false) {
 					$action = str_replace('!', '', $action);
+					$arr['label'] = str_replace('!', '', $arr['label']);
 					$arr['onclick'] = "return confirm('Are you sure?');return false;";
 				}
-				
+
 				//add attributes
-				if(!isset($arr['href'])) {
+				if (!isset($arr['href'])) {
 					$href = _::url(true);
-					
+
 					$action_parts = explode('?', $action);
 					$char = '?';
 					
 					if ($this->actions_mode == self::MODE_REPLACE) {
 						$i = $this->replace_level;
-						while($i--) {
+						while ($i--) {
 							$href = dirname($href);
 						}
 					}
@@ -599,12 +599,12 @@ SCRIPT;
 							$href .= '/' . urlencode($value);
 						}
 					}
-					if(isset($action_parts[1])) {
+					if (isset($action_parts[1])) {
 						$href .= $char . $action_parts[1];
 					}
 					$arr['href'] = $href;
 				}
-				if(!isset($arr['class'])) {
+				if (!isset($arr['class'])) {
 					$arr['class'] = 'btn btn-default btn-mini';
 				}
 				$btn = $this->tag('a', $arr['label'], $arr);
