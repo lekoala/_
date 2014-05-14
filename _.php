@@ -529,6 +529,10 @@ class _ {
 		return self::$env == 'prod';
 	}
 	
+	static function is_cron() {
+		return php_sapi_name() == 'cli' || empty($_SERVER['REMOTE_ADDR']);
+	}
+	
 	/**
 	 * Examine dev et test settings and set the env
 	 */
