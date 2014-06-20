@@ -15,7 +15,7 @@ require_once __DIR__ . '/_func.php';
  * Main class
  */
 class _ {
-	
+
 	const ENV_DEV = 'dev';
 	const ENV_TEST = 'test';
 	const ENV_PROD = 'prod';
@@ -520,19 +520,19 @@ class _ {
 	static function is_dev() {
 		return self::$env == 'dev';
 	}
-	
+
 	static function is_test() {
 		return self::$env == 'test';
 	}
-	
+
 	static function is_prod() {
 		return self::$env == 'prod';
 	}
-	
+
 	static function is_cron() {
 		return php_sapi_name() == 'cli' || empty($_SERVER['REMOTE_ADDR']);
 	}
-	
+
 	/**
 	 * Examine dev et test settings and set the env
 	 */
@@ -599,7 +599,7 @@ class _ {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Resolve a template name with our conventions
 	 * 
@@ -642,7 +642,7 @@ class _ {
 		}
 		$resolved_filename = self::template_exists($filename);
 		if (!$resolved_filename) {
-			throw new Exception($filename . ' is not a valid filename. Resolved as : ' .  self::template_resolve($filename));
+			throw new Exception($filename . ' is not a valid filename. Resolved as : ' . self::template_resolve($filename));
 		}
 
 		foreach (self::$template_expose as $var) {
@@ -1192,7 +1192,7 @@ function _toggle(target) {
 	 */
 	static function method() {
 		return isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) :
-		(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+		  (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
 	}
 
 	/**
@@ -1340,14 +1340,14 @@ function _toggle(target) {
 		}
 		return $kk;
 	}
-	
+
 	static function session_input($key, $default = null) {
 		$v = self::input($key);
-		if($v) {
+		if ($v) {
 			return $v;
 		}
 		$v = self::session($key);
-		if($v) {
+		if ($v) {
 			return $v;
 		}
 		return $default;
@@ -1399,7 +1399,7 @@ function _toggle(target) {
 					}
 					return $default;
 				}
-				if(is_string($filter)) {
+				if (is_string($filter)) {
 					$filter = null;
 				}
 				return filter_var($val, $filter);
@@ -1493,6 +1493,19 @@ function _toggle(target) {
 			}
 			$l++;
 		}
+	}
+
+	static function count_files_in_dir($dir) {
+		$count = 0;
+		if (is_dir($dir)) {
+			$handler = opendir($dir);
+			while ($file = readdir($handler)) {
+				if ($file != "." && $file != "..") {
+					$count++;
+				}
+			}
+		}
+		return $count;
 	}
 
 	static function csv_to_array($filename, $delimiter = 'auto', $header = null) {
@@ -1799,9 +1812,9 @@ function _toggle(target) {
 			}
 
 			$message = Swift_Message::newInstance($subject)
-			->setFrom($from)
-			->setTo($to)
-			->setBody($message);
+			  ->setFrom($from)
+			  ->setTo($to)
+			  ->setBody($message);
 
 			// Set headers
 			$headers = $message->getHeaders();
@@ -1987,11 +2000,11 @@ function _toggle(target) {
 
 		//rfc 2109 compatible cookie set
 		header('Set-Cookie: ' . rawurlencode($name) . '=' . rawurlencode($value)
-		. (empty($domain) ? '' : '; Domain=' . $domain)
-		. (empty($expire) ? '' : '; Max-Age=' . $expire)
-		. (empty($path) ? '' : '; Path=' . $path)
-		. (!$secure ? '' : '; Secure')
-		. (!$httponly ? '' : '; HttpOnly'), false);
+		  . (empty($domain) ? '' : '; Domain=' . $domain)
+		  . (empty($expire) ? '' : '; Max-Age=' . $expire)
+		  . (empty($path) ? '' : '; Path=' . $path)
+		  . (!$secure ? '' : '; Secure')
+		  . (!$httponly ? '' : '; HttpOnly'), false);
 		return true;
 	}
 
@@ -2343,8 +2356,8 @@ function _toggle(target) {
 	 * @return resource
 	 */
 	static function image_auto_rotate($filename, $resource = null) {
-		$ext = pathinfo($filename,PATHINFO_EXTENSION);
-		if(!in_array(strtolower($ext), array('jpg','jpeg'))) {
+		$ext = pathinfo($filename, PATHINFO_EXTENSION);
+		if (!in_array(strtolower($ext), array('jpg', 'jpeg'))) {
 			return false;
 		}
 		$exif = exif_read_data($filename);
@@ -2398,7 +2411,7 @@ function _toggle(target) {
 					throw new Exception("$dir not supported");
 			}
 		}
-		$image = imagerotate($image, $dir,0);
+		$image = imagerotate($image, $dir, 0);
 		return self::image_save($image, $filename);
 	}
 
@@ -3193,7 +3206,7 @@ function _toggle(target) {
 		}
 		return $loc = $value;
 	}
-	
+
 	/**
 	 * Groups/splits an array by the key given. Can supply additional parameters beyond the first key
 	 * for additional groupins.
@@ -3205,47 +3218,41 @@ function _toggle(target) {
 	 *
 	 * @return array
 	 */
-	static function array_group_by ( $arr, $key ) {
+	static function array_group_by($arr, $key) {
 
-		if ( !is_array ( $arr ) )
-		{
-			trigger_error ( "array_group_by(): The first argument should be an array", E_USER_ERROR );
+		if (!is_array($arr)) {
+			trigger_error("array_group_by(): The first argument should be an array", E_USER_ERROR);
 		}  // End if
 
-		if ( !is_string ( $key ) &&
-			 !is_int ( $key ) &&
-			 !is_float ( $key ) )
-		{
-			trigger_error ( "array_group_by(): The key should be a string or integer", E_USER_ERROR );
+		if (!is_string($key) &&
+		  !is_int($key) &&
+		  !is_float($key)) {
+			trigger_error("array_group_by(): The key should be a string or integer", E_USER_ERROR);
 		}  // End if
 
-		$newArr = array ();
+		$newArr = array();
 
 		// Load the new array splitting by the target key
-		foreach ( $arr as $value )
-		{
-			$arrKey = $value [ $key ];
-			$newArr [ $arrKey ][] = $value;
+		foreach ($arr as $value) {
+			$arrKey = $value [$key];
+			$newArr [$arrKey][] = $value;
 		}  // End foreach
-
 		// Recursively build a nested grouping if more parameters are supplied
 		// Build for each previously grouped values, slicing off the new split parameters for each call
-		if ( func_num_args () > 2 )
-		{
+		if (func_num_args() > 2) {
 
-			$args = func_get_args ();
+			$args = func_get_args();
 
-			foreach ( $newArr as $key => $value )
-			{
-				$parms = array_merge ( array ( $value ), array_slice ( $args, 2, func_num_args () ) );
-				$newArr [ $key ] = call_user_func_array ( array(__CLASS__,"array_group_by"), $parms );
+			foreach ($newArr as $key => $value) {
+				$parms = array_merge(array($value), array_slice($args, 2, func_num_args()));
+				$newArr [$key] = call_user_func_array(array(__CLASS__, "array_group_by"), $parms);
 			}  // End foreach
-
 		}  // End if
 
 		return $newArr;
+	}
 
-	}  // End array_group_by
+// End array_group_by
 
 	static function array_rand(array $arr) {
 		return $arr[array_rand($arr) - 1];
