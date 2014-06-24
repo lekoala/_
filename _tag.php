@@ -120,6 +120,15 @@ class _tag {
 	
 	/**
 	 * 
+	 * @param string $v
+	 * @return type
+	 */
+	public function setId($v) {
+		return $this->setAttr('id',$v);
+	}
+	
+	/**
+	 * 
 	 * @param type $v
 	 * @return type
 	 */
@@ -152,6 +161,17 @@ class _tag {
 		if ($v === null) {
 			return isset($this->attributes[$k]) ? $this->attributes[$k] : null;
 		}
+		$this->attributes[$k] = $v;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @param string $k
+	 * @param mixed $v
+	 * @return \_tag
+	 */
+	public function setAttr($k,$v) {
 		$this->attributes[$k] = $v;
 		return $this;
 	}
