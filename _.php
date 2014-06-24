@@ -1192,7 +1192,7 @@ function _toggle(target) {
 	 */
 	static function method() {
 		return isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) :
-		  (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+				(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
 	}
 
 	/**
@@ -1812,9 +1812,9 @@ function _toggle(target) {
 			}
 
 			$message = Swift_Message::newInstance($subject)
-			  ->setFrom($from)
-			  ->setTo($to)
-			  ->setBody($message);
+					->setFrom($from)
+					->setTo($to)
+					->setBody($message);
 
 			// Set headers
 			$headers = $message->getHeaders();
@@ -2000,11 +2000,11 @@ function _toggle(target) {
 
 		//rfc 2109 compatible cookie set
 		header('Set-Cookie: ' . rawurlencode($name) . '=' . rawurlencode($value)
-		  . (empty($domain) ? '' : '; Domain=' . $domain)
-		  . (empty($expire) ? '' : '; Max-Age=' . $expire)
-		  . (empty($path) ? '' : '; Path=' . $path)
-		  . (!$secure ? '' : '; Secure')
-		  . (!$httponly ? '' : '; HttpOnly'), false);
+				. (empty($domain) ? '' : '; Domain=' . $domain)
+				. (empty($expire) ? '' : '; Max-Age=' . $expire)
+				. (empty($path) ? '' : '; Path=' . $path)
+				. (!$secure ? '' : '; Secure')
+				. (!$httponly ? '' : '; HttpOnly'), false);
 		return true;
 	}
 
@@ -3225,8 +3225,8 @@ function _toggle(target) {
 		}  // End if
 
 		if (!is_string($key) &&
-		  !is_int($key) &&
-		  !is_float($key)) {
+				!is_int($key) &&
+				!is_float($key)) {
 			trigger_error("array_group_by(): The key should be a string or integer", E_USER_ERROR);
 		}  // End if
 
@@ -3579,6 +3579,35 @@ function _toggle(target) {
 		$json = json_decode($curl_results, true);
 
 		return intval($json[0]['result']['metadata']['globalCounts']['count']);
+	}
+
+	/**
+	 * Mail merge string to a new file. The patterns should be ${key}
+	 * 
+	 * @param string $template
+	 * @param string $output
+	 * @param array $data
+	 * @return boolean
+	 */
+	static function mail_merge($template, $output, array $data = array()) {
+		if (!copy($template, $output))  {
+			// make a duplicate so we dont overwrite the template
+			return false; // could not duplicate template
+		}
+		$zip = new ZipArchive();
+		if ($zip->open($output, ZIPARCHIVE::CHECKCONS) !== TRUE) {
+			return false; // probably not a docx file
+		}
+		$file = substr($template, -4) == '.odt' ? 'content.xml' : 'word/document.xml';
+		$content = $zip->getFromName($file);
+		foreach ($data as $key => $value) {
+			$content = str_replace('${' . $key . '}', $value, $content);
+		}
+		$zip->deleteName($file);
+		$zip->addFromString($file, $content);
+		$zip->close();
+		echo $content;
+		return true;
 	}
 
 }
