@@ -203,7 +203,11 @@ class _form_element extends _tag {
 	public function value($v = null) {
 		return $this->attr('value', $v);
 	}
-
+	
+	public function setValue($v) {
+		return $this->setAttr('value', $v);
+	}
+	
 	public function name($v = null) {
 		if ($v !== null) {
 			if (_form::$auto_id && !$this->id()) {
