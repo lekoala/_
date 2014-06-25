@@ -3783,7 +3783,7 @@ class _datetime extends DateTime {
 			$date = new DateTime($date);
 		}
 
-		$diff = $this->diff($date)->format('U');
+		$diff = $this->format('U') - $date->format('U');
 		$result = '';
 
 		if (abs($diff) < 86400) {
@@ -3815,22 +3815,22 @@ class _datetime extends DateTime {
 		}
 
 		if ($simple) {
-			return vsprintf('%1$s %2$s', $unit_diff, $units);
+			return vsprintf('%1$s %2$s', array($unit_diff, $units));
 		}
 
 		if ($relative_to_now) {
 			if ($diff > 0) {
-				return vsprintf('%1$s %2$s from now', $unit_diff, $units);
+				return vsprintf('%1$s %2$s from now', array($unit_diff, $units));
 			}
 
-			return vsprintf('%1$s %2$s ago', $unit_diff, $units);
+			return vsprintf('%1$s %2$s ago', array($unit_diff, $units));
 		}
 
 		if ($diff > 0) {
-			return vsprintf('%1$s %2$s after', $unit_diff, $units);
+			return vsprintf('%1$s %2$s after', array($unit_diff, $units));
 		}
 
-		return vsprintf('%1$s %2$s before', $unit_diff, $units);
+		return vsprintf('%1$s %2$s before', array($unit_diff, $units));
 	}
 
 	/* static helpers */
