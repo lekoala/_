@@ -9,21 +9,20 @@ class _form {
 
 	public static $use_html5 = false;
 	public static $auto_id = true;
-
 	protected $fields = array();
-	
+
 	public function __construct($fields = array()) {
 		$this->fields = $fields;
 	}
-	
+
 	public function render() {
 		$html = '';
-		foreach($this->fields as $f) {
+		foreach ($this->fields as $f) {
 			$html .= (string) $f;
 		}
 		return $html;
 	}
-	
+
 	public function __toString() {
 		try {
 			return $this->render();
@@ -31,32 +30,31 @@ class _form {
 			return $ex->getMessage();
 		}
 	}
-	
+
 	/**
 	 * Set form data
 	 * @param array|object $data
 	 */
 	public function set_data($data) {
-		if(is_object($data)) {
+		if (is_object($data)) {
 			if (method_exists($data, 'to_array')) {
 				$data = $data->to_array();
-			}
-			else {
+			} else {
 				$data = get_object_vars($data);
 			}
 		}
-		foreach($data as $k => $v) {
+		foreach ($data as $k => $v) {
 			$field = $this->get_field($k);
-			if($field) {
+			if ($field) {
 				$field->value($v);
 			}
 		}
 	}
-	
+
 	public function get_fields() {
 		return $this->fields;
 	}
-	
+
 	/**
 	 * Get field by name
 	 * 
@@ -64,14 +62,14 @@ class _form {
 	 * @return _field_element
 	 */
 	public function get_field($name) {
-		foreach($this->fields as $field) {
-			if($field->name() == $name) {
+		foreach ($this->fields as $field) {
+			if ($field->name() == $name) {
 				return $field;
 			}
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @param string $action
 	 * @param string $method
@@ -203,11 +201,11 @@ class _form_element extends _tag {
 	public function value($v = null) {
 		return $this->attr('value', $v);
 	}
-	
+
 	public function setValue($v) {
 		return $this->setAttr('value', $v);
 	}
-	
+
 	public function name($v = null) {
 		if ($v !== null) {
 			if (_form::$auto_id && !$this->id()) {
@@ -216,6 +214,56 @@ class _form_element extends _tag {
 			}
 		}
 		return $this->attr('name', $v);
+	}
+
+	//parsley shortcuts
+
+	public function required($v = true) {
+		return $this->attr('data-parsley-required', $v);
+	}
+
+	public function is_email() {
+		return $this->attr('data-parsley-type', 'email');
+	}
+
+	public function is_number() {
+		return $this->attr('data-parsley-type', 'number');
+	}
+
+	public function is_integer() {
+		return $this->attr('data-parsley-type', 'integer');
+	}
+
+	public function is_digits() {
+		return $this->attr('data-parsley-type', 'digits');
+	}
+
+	public function is_alphanum() {
+		return $this->attr('data-parsley-type', 'alphanum');
+	}
+
+	public function minlength($x = 6) {
+		return $this->attr('data-parsley-minlength', $x);
+	}
+
+	public function maxlength($x = 6) {
+		return $this->attr('data-parsley-maxlength', $x);
+	}
+
+	public function rangelength($min, $max) {
+		return $this->attr('data-parsley-length', "[$min,$max]");
+	}
+
+	public function pattern($pattern) {
+		$pattern = '\\' . $pattern;
+		return $this->attr('data-parsley-pattern', "$pattern");
+	}
+
+	public function is_equalto($id) {
+		if (strpos($id, '#') !== 0) {
+			$id = '#' . $id;
+		}
+		return $this->attr('data-parsley-equalto', "$id");
 	}
 
 }
