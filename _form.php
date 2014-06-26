@@ -281,7 +281,7 @@ class _form_element extends _tag {
 class _form_literal extends _form_element {
 	
 	public function render($attrs = null) {
-		return $this->value();
+		return '<div class="literal-field">' . $this->value() . '</div>';
 	}
 }
 
