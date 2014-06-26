@@ -153,6 +153,16 @@ class _form {
 	public static function element($name = null, $value = null) {
 		return new _form_element($name, $value);
 	}
+	
+	/**
+	 * 
+	 * @param type $name
+	 * @param type $value
+	 * @return \_form_literal
+	 */
+	public static function literal($name = null, $value = null) {
+		return new _form_literal($name, $value);
+	}
 
 	/**
 	 * 
@@ -266,6 +276,13 @@ class _form_element extends _tag {
 		return $this->attr('data-parsley-equalto', "$id");
 	}
 
+}
+
+class _form_literal extends _form_element {
+	
+	public function render($attrs = null) {
+		return $this->value();
+	}
 }
 
 /**
