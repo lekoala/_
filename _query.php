@@ -469,6 +469,7 @@ class _query {
 			return $this;
 		}
 		$columns = $this->detect_external_key($columns);
+		$this->having[] = $columns;
 		return $this;
 	}
 
