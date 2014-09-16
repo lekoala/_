@@ -3590,7 +3590,7 @@ function _toggle(target) {
 	 * @return boolean
 	 */
 	static function mail_merge($template, $output, array $data = array()) {
-		if (!copy($template, $output))  {
+		if (!copy($template, $output)) {
 			// make a duplicate so we dont overwrite the template
 			return false; // could not duplicate template
 		}
@@ -3639,6 +3639,42 @@ class _datetime extends DateTime {
 			$date = new DateTime($date);
 		}
 		return parent::diff($date);
+	}
+
+	/**
+	 * Check if date is between to date
+	 * 
+	 * @param string|int $start
+	 * @param string|int $end
+	 * @return boolean
+	 */
+	public function is_between($start, $end) {
+		$t = $this->format('U');
+		return self::is_date_between($t, $start, $end);
+	}
+
+	/**
+	 * Check if date is between to date
+	 * 
+	 * @param string|int $date
+	 * @param string|int $start
+	 * @param string|int $end
+	 * @return boolean
+	 */
+	public static function is_date_between($date, $start, $end) {
+		if (!is_int($date)) {
+			$date = strtotime((string) $date);
+		}
+		if (!is_int($start)) {
+			$start = strtotime((string) $start);
+		}
+		if (!is_int($end)) {
+			$end = strtotime((string) $end);
+		}
+		if ($date >= $start && $date <= $end) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
