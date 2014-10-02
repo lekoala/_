@@ -10,6 +10,8 @@ class _form {
 	public static $use_html5 = false;
 	public static $auto_id = true;
 	protected $fields = array();
+	protected $enable_parsley;
+	protected $classes;
 
 	public function __construct($fields = array()) {
 		$this->fields = $fields;
@@ -71,15 +73,33 @@ class _form {
 	}
 
 	/**
+	 * 
+	 * @param type $v
+	 * @return \_form
+	 */
+	public function enable_parsley($v = true) {
+		$this->enable_parsley = $v;
+		return $this;
+	}
+	
+	public function classes($v) {
+		$this->classes = $v;
+		return $this;
+	}
+	
+	/**
 	 * @param string $action
 	 * @param string $method
 	 * @param string $enctype
 	 * @return string
 	 */
-	public static function open($action, $method = "POST", $enctype = null) {
-		$html = '<form action="' . $action . '" method="' . $method . '"';
+	public function open($action = '', $method = "POST", $enctype = null) {
+		$html = '<form action="' . $action . '" method="' . $method . '" class="'.$this->classes.'"';
 		if ($enctype) {
 			$html .= ' enctype="multipart/form-data"';
+		}
+		if($this->enable_parsley) {
+			$html .= ' data-parsley-validate';
 		}
 		$html .= '>';
 		return $html;
@@ -89,7 +109,7 @@ class _form {
 	 * 
 	 * @return string
 	 */
-	public static function close() {
+	public function close() {
 		return '</form>';
 	}
 
@@ -98,10 +118,21 @@ class _form {
 	 * @param type $name
 	 * @param type $value
 	 * @param type $options
-	 * @return type
+	 * @return _form_select
 	 */
 	public static function select($name = null, $value = null, $options = array()) {
 		return _form_select::inst($name, $value)->options($options);
+	}
+
+	/**
+	 * 
+	 * @param type $name
+	 * @param type $value
+	 * @param type $options
+	 * @return _form_multicheckboxes
+	 */
+	public static function multicheckboxes($name = null, $value = null, $options = array()) {
+		return _form_multicheckboxes::inst($name, $value)->options($options);
 	}
 
 	/**
@@ -138,10 +169,20 @@ class _form {
 	 * 
 	 * @param type $name
 	 * @param type $value
-	 * @return \_form_input
+	 * @return \_form_daterange
 	 */
 	public static function daterange($name = null, $value = null) {
 		return new _form_daterange($name, $value);
+	}
+
+	/**
+	 * 
+	 * @param type $name
+	 * @param type $value
+	 * @return \_form_autocomplete
+	 */
+	public static function autocomplete($name = null, $value = null) {
+		return new _form_autocomplete($name, $value);
 	}
 
 	/**
@@ -153,7 +194,7 @@ class _form {
 	public static function element($name = null, $value = null) {
 		return new _form_element($name, $value);
 	}
-	
+
 	/**
 	 * 
 	 * @param type $name
@@ -279,10 +320,11 @@ class _form_element extends _tag {
 }
 
 class _form_literal extends _form_element {
-	
+
 	public function render($attrs = null) {
 		return '<div class="literal-field">' . $this->value() . '</div>';
 	}
+
 }
 
 /**
@@ -592,7 +634,7 @@ class _form_daterange extends _form_input {
 	/**
 	 * 
 	 * @param type $v
-	 * @return \_form_date
+	 * @return \_form_datepicker
 	 */
 	public function datepicker_options($v) {
 		if ($v === null) {
@@ -646,9 +688,100 @@ class _form_daterange extends _form_input {
 		} else {
 			$html = parent::render($attrs);
 		}
-		app\requirements::js('js/daterangepicker/daterangepicker.js');
-		app\requirements::css('js/daterangepicker/daterangepicker.css');
+		//@todo : remove coupling
+		if (class_exists('app\requirements')) {
+			app\requirements::js('js/daterangepicker/daterangepicker.js');
+			app\requirements::css('js/daterangepicker/daterangepicker.css');
+		}
 		$html .= '<script>' . $this->initJsDatepicker($this->datepicker_options) . '</script>';
+		return $html;
+	}
+
+}
+
+/**
+ */
+class _form_autocomplete extends _form_input {
+
+	public static $default_options = array(
+	);
+	protected $autocomplete_options = array();
+	protected $custom_options;
+	protected $source;
+	protected $hidden;
+
+	public function __construct($name = null, $value = null) {
+		parent::__construct($name, $value);
+		$this->cls('autocomplete');
+	}
+
+	public function get_custom_options() {
+		return $this->custom_options;
+	}
+
+	public function set_custom_options($custom_options) {
+		$this->custom_options = $custom_options;
+		return $this;
+	}
+
+	/**
+	 * 
+	 * @param type $v
+	 * @return \_form_autocomplete
+	 */
+	public function autocomplete_options($v) {
+		if ($v === null) {
+			return $this->autocomplete_options;
+		}
+		$this->autocomplete_options = $v;
+		return $this;
+	}
+
+	protected function initJsAutocomplete($options = array()) {
+		if ($this->custom_options) {
+			$opts = $this->custom_options;
+		} else {
+			$default_options = self::$default_options;
+			$options = array_merge($default_options, $options);
+			if ($this->source) {
+				$options['source'] = $this->source;
+			}
+			if ($this->hidden) {
+				$options['select'] = 'function(event,ui) { $(\'#' . $this->id() . '\').val(ui.item.label) ; $(\'input[rel=' . $this->id() . ']\').val(ui.item.id) ; }';
+			}
+			$opts = json_encode($options, JSON_UNESCAPED_SLASHES);
+			//json functions
+			$opts = preg_replace('/:"function\((.*?)\) \{(.*?)}"/', ':function($1) {$2}', $opts);
+		}
+		return "$('#" . $this->id() . "').autocomplete(" . $opts . ");";
+	}
+
+	public function source($v = null) {
+		if ($v === null) {
+			return $this->source;
+		}
+		$this->source = $v;
+		return $this;
+	}
+
+	public function hidden($name = null) {
+		if ($name === null) {
+			return $this->hidden;
+		}
+		$this->hidden = $name;
+		return $this;
+	}
+
+	/**
+	 * Overriden render method to include label if exists
+	 * @return string
+	 */
+	public function render($attrs = null) {
+		$html = parent::render($attrs);
+		if ($this->hidden) {
+			$html .= '<input type="hidden" name="' . $this->hidden . '" value="' . $attrs['value'] . '" rel="' . $this->id() . '">';
+		}
+		$html .= '<script>' . $this->initJsAutocomplete($this->autocomplete_options) . '</script>';
 		return $html;
 	}
 
@@ -765,6 +898,60 @@ class _form_select extends _form_input {
 			$options[] = '<option value="' . $k . '"' . $selected . '>' . $v . '</option>';
 		}
 		return implode("\n", $options);
+	}
+
+}
+
+/**
+ * A checkbox set
+ */
+class _form_multicheckboxes extends _form_select {
+
+	protected $tag = 'input';
+	protected $self_closed = true;
+
+	public function __construct($name = null, $value = null) {
+		parent::__construct($name, $value);
+		$this->type('checkbox');
+	}
+
+	public function getAttributes() {
+		$attrs = $this->attributes;
+		$attrs = array_merge($this->getDefaultAttributes(), $attrs);
+		return $attrs;
+	}
+
+	/**
+	 * Overriden render method to include label if exists
+	 * @return string
+	 */
+	public function render($attrs = null) {
+		if ($attrs === null) {
+			$attrs = $this->getAttributes();
+		}
+		$value = $attrs['value'];
+		if(!is_array($value)) {
+			$value = array();
+		}
+		$attrs['value'] = 1;
+		$attrsHtml = $this->getAttrsHtml($attrs);
+		$tag = $this->tag();
+		
+		$html = '';
+		foreach ($this->options as $k => $v) {
+			if ($this->no_numeric_key && is_int($k)) {
+				$k = $v;
+			}
+			$attrsHtmlTag =  $attrsHtml;
+			if (in_array($k, $value)) {
+				$attrsHtmlTag .=  ' checked="checked"';
+			}
+			$taghtml = '<input type="hidden" value="0" name="' . $attrs['name'] . '[' . $k . ']' . '">' . '<' . $tag . $attrsHtmlTag . '/>';
+			$html .= '<label class="checkbox">' . $taghtml . ' ' . $v . '</label>';
+		}
+
+
+		return $html;
 	}
 
 }
