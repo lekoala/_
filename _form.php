@@ -959,11 +959,20 @@ class _form_multicheckboxes extends _form_select {
 class _form_checkbox extends _form_input {
 
 	protected $right_label = true;
+    protected $inline = false;
 
 	public function __construct($name = null, $value = null) {
 		parent::__construct($name, $value);
 		$this->type('checkbox');
 	}
+
+    public function inline($v = null) {
+        if($v === null) {
+            return $this->inline;
+        }
+        $this->inline = $v;
+        return $this;
+    }
 
 	/**
 	 * 
@@ -997,7 +1006,11 @@ class _form_checkbox extends _form_input {
 
 		$html = '<input type="hidden" value="0" name="' . $attrs['name'] . '">' . '<' . $tag . $attrsHtml . '/>';
 		if ($this->label) {
-			$html = '<label class="checkbox">' . $html . ' ' . $this->label . '</label>';
+            $class = 'checkbox';
+            if($this->inline) {
+                $class = 'checkbox-inline';
+            }
+			$html = '<label class="'.$class.'">' . $html . ' ' . $this->label . '</label>';
 		}
 		return $html;
 	}
