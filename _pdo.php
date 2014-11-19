@@ -494,7 +494,7 @@ ORDER BY
 			$type = 'DECIMAL(10,2) UNSIGNED';
 		}
 		//int
-		elseif (preg_match(':_id$:', $name) || preg_match(':_count$:', $name) || preg_match(':_quantity$:', $name) || preg_match(':_level$:', $name) || preg_match(':_number$:', $name) || $name == 'level' || $name == 'percent' || $name == 'quantity' || $name == 'sort_order' || $name == 'permissions' || $name == 'perms' || $name == 'day') {
+		elseif (preg_match(':_id$:', $name) || preg_match(':_count$:', $name) || preg_match(':_quantity$:', $name) || preg_match(':_qt$:', $name) || preg_match(':_level$:', $name) || preg_match(':_number$:', $name) || $name == 'level' || $name == 'percent' || $name == 'quantity' || $name == 'sort_order' || $name == 'permissions' || $name == 'perms' || $name == 'day') {
 			$type = 'INT';
 		}
 		//geo
