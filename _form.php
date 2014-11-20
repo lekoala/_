@@ -1006,11 +1006,13 @@ class _form_checkbox extends _form_input {
 
 		$html = '<input type="hidden" value="0" name="' . $attrs['name'] . '">' . '<' . $tag . $attrsHtml . '/>';
 		if ($this->label) {
-            $class = 'checkbox';
             if($this->inline) {
-                $class = 'checkbox-inline';
+                $html = '<label class="checkbox-inline">' . $html . ' ' . $this->label . '</label>';
             }
-			$html = '<label class="'.$class.'">' . $html . ' ' . $this->label . '</label>';
+            else {
+                $html = '<div class="checkbox"><label>' . $html . ' ' . $this->label . '</label></div>';
+            }
+			
 		}
 		return $html;
 	}
