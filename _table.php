@@ -31,11 +31,27 @@ class _table {
 	protected $searchable_input = '<input type="submit" value="filter">';
 	protected $form_method = 'post';
 	protected $columns_width = array();
+	protected $row_style='';
 
 	public function __construct() {
 		self::$instances++;
 	}
 
+	public function get_row_style(){
+		return $this->row_style;
+	}
+	
+	/*	
+	 * @param = array
+	 * 
+	 * Can set a background-color array[1] if data has a field name like array[0] 
+	 * 
+	 */
+	public function set_row_style($row_style){
+		$this->row_style = $row_style;
+		return $this;
+	}
+	
 	public function get_identifier() {
 		return $this->identifier;
 	}
@@ -390,7 +406,20 @@ class _table {
 					$this->id = 'table-' . strtolower(str_replace('\\', '-', get_class($data)));
 				}
 
-				$this->html .= '<tr>';
+				
+				if($this->get_row_style()){
+					$style = $this->get_row_style();
+					if(isset($data->$style[0]) && $data->$style[0] == 1 ){
+						$this->html .= "<tr style='background-color:".$style[1]."'>";
+					}
+					else{
+						$this->html .= '<tr>';
+					}
+				}
+				else{
+					$this->html .= '<tr>';
+				}
+								
 				if ($this->selectable) {
 					//check item
 					$this->html .= $this->tag('td', '<input type="checkbox" name="selectable[]" value="' . $value . '" />');

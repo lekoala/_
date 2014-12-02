@@ -490,7 +490,7 @@ ORDER BY
 			$type = 'VARCHAR(2)';
 		}
 		//price
-		elseif (strpos($name, 'price') === 0 || preg_match(':_price$:', $name)) {
+		elseif ($name === 'price' || preg_match(':_price$:', $name)) {
 			$type = 'DECIMAL(10,2) UNSIGNED';
 		}
 		//int
