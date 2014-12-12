@@ -969,9 +969,11 @@ class _orm implements ArrayAccess {
 	 * Init, called at the end of the constructor or load method
 	 */
 	protected function init() {
+        //TODO: this takes at lot of time (reflection and co) should maybe find something simple
 		$this->_original = $this->get_public_properties($this);
 
 		//transform date object
+        //TODO: avoid doing that up front, instead it would be faster to analyze schema and transform only if needed
 		foreach ($this->_original as $k => $v) {
 			preg_match('/^(\d{4}-\d{2}-\d{2})$/', $v, $date);
 			preg_match('/^(\d{2}:\d{2}:\d{2})$/', $v, $time);
