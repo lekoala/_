@@ -685,7 +685,7 @@ ORDER BY
             return false;
         }
         $sql = 'UPDATE ' . $table . " SET \n";
-        $this->to_named_params($where, $params);
+        self::to_named_params($where, $params);
         foreach ($data as $k => $v) {
             if ($v === '' || $v === null) {
                 $v = null;
@@ -843,7 +843,7 @@ HAVING ( COUNT($field) > 1 )";
      * @param string $where
      * @param array $params
      */
-    function to_named_params(&$where, array &$params)
+    protected static function to_named_params(&$where, array &$params)
     {
         if (is_string($where) && preg_match('/\?/', $where, $matches)) {
             $matches_count = count($matches);

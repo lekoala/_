@@ -246,8 +246,7 @@ class _orm implements ArrayAccess
     static function update_where(&$where, array &$params = array())
     {
         $pk_fields = static::get_pk();
-        $pdo = static::get_pdo();
-        $pdo->to_named_params($where, $params);
+        self::to_named_params($where, $params);
 
         if (is_numeric($where)) {
             // single pk
@@ -269,6 +268,25 @@ class _orm implements ArrayAccess
             $where = implode(' AND ', $sql);
         }
         return $where;
+    }
+
+    /**
+     * A quick fix to convert ? to named params
+     *
+     * @param string $where
+     * @param array $params
+     */
+    protected static function to_named_params(&$where, array &$params)
+    {
+        if (is_string($where) && preg_match('/\?/', $where, $matches)) {
+            $matches_count = count($matches);
+            $named_params = array();
+            for ($i = 0; $i < $matches_count; $i++) {
+                $where = preg_replace('/\?/', ':placeholder' . $i, $where, 1);
+                $named_params[':placeholder' . $i] = $params[$i];
+            }
+            $params = $named_params;
+        }
     }
 
     /**
