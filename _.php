@@ -1925,25 +1925,21 @@ function _toggle(target) {
      */
     static function remember_me($time = '2 weeks')
     {
-        $currentParams = session_get_cookie_params();
-
         if (!is_numeric($time)) {
             $time = strtotime($time);
         }
 
+        // @link https://www.php.net/manual/en/session.configuration.php
         $params = array(
-            $time,
-            $currentParams['path'],
-            $currentParams['domain'],
-            $currentParams['secure']
+            'cookie_liftetime' => $time,
+            'cookie_path' => '/',
+            'cookie_domain' => '',
+            'cookie_secure' => true
         );
 
-        call_user_func_array('session_set_cookie_params', $params);
-
         if (session_id() == '') {
-            session_start();
+            session_start($params);
         }
-        session_regenerate_id();
     }
 
     /**
