@@ -39,6 +39,7 @@ class _tag
     }
 
     /**
+     *
      * @param string $v
      * @return $this
      */
@@ -52,6 +53,7 @@ class _tag
     }
 
     /**
+     *
      * @param string $v
      * @return $this
      */
@@ -65,6 +67,7 @@ class _tag
     }
 
     /**
+     *
      * @param string $v
      * @return $this
      */
@@ -78,6 +81,7 @@ class _tag
     }
 
     /**
+     *
      * @param string $v
      * @return $this
      */
@@ -164,7 +168,7 @@ class _tag
      *
      * @param string $k
      * @param string $v
-     * @return \_tag
+     * @return $this
      */
     public function attr($k, $v = null)
     {
@@ -179,7 +183,7 @@ class _tag
      *
      * @param string $k
      * @param mixed $v
-     * @return \_tag
+     * @return $this
      */
     public function setAttr($k, $v)
     {
@@ -191,7 +195,7 @@ class _tag
      *
      * @param string $k
      * @param string $v
-     * @return \_tag
+     * @return $this
      */
     public function appendAttr($k, $v)
     {
@@ -209,7 +213,7 @@ class _tag
     /**
      *
      * @param string $k
-     * @return \_tag
+     * @return $this
      */
     public function removeAttr($k)
     {
@@ -220,15 +224,17 @@ class _tag
     }
 
     /**
+     *
      * @return string
      */
     protected function getContentHtml()
     {
-        return htmlentities($this->content, ENT_QUOTES, 'UTF-8');
+        return htmlentities($this->content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     /**
-     * @return string
+     *
+     * @return array
      */
     public function getAttributes()
     {
@@ -236,6 +242,7 @@ class _tag
     }
 
     /**
+     *
      * @return string
      */
     protected function getAttrsHtml($attrs = null)
@@ -255,6 +262,7 @@ class _tag
     }
 
     /**
+     *
      * @return string
      */
     public function render($attrs = null)

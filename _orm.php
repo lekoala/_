@@ -246,7 +246,8 @@ class _orm implements ArrayAccess
     static function update_where(&$where, array &$params = array())
     {
         $pk_fields = static::get_pk();
-        self::to_named_params($where, $params);
+        $pdo = static::get_pdo();
+        $pdo->to_named_params($where, $params);
 
         if (is_numeric($where)) {
             // single pk
@@ -268,25 +269,6 @@ class _orm implements ArrayAccess
             $where = implode(' AND ', $sql);
         }
         return $where;
-    }
-
-    /**
-     * A quick fix to convert ? to named params
-     *
-     * @param string $where
-     * @param array $params
-     */
-    protected static function to_named_params(&$where, array &$params)
-    {
-        if (is_string($where) && preg_match('/\?/', $where, $matches)) {
-            $matches_count = count($matches);
-            $named_params = array();
-            for ($i = 0; $i < $matches_count; $i++) {
-                $where = preg_replace('/\?/', ':placeholder' . $i, $where, 1);
-                $named_params[':placeholder' . $i] = $params[$i];
-            }
-            $params = $named_params;
-        }
     }
 
     /**
@@ -370,6 +352,21 @@ class _orm implements ArrayAccess
         $table = static::get_table();
 
         return $pdo->count($table, $where, $params);
+    }
+
+    /**
+     * Like find, but count the records instead (seems like rowCount of pdo doesn't work too well)
+     *
+     * @param string $where (optional)
+     * @param array $params (optional)
+     * @return int The number of rows
+     */
+    static function id_count($where = null, $params = array())
+    {
+        $pdo = static::get_pdo();
+        $table = static::get_table();
+
+        return $pdo->id_count($table, $where, $params);
     }
 
     /**
@@ -553,7 +550,7 @@ class _orm implements ArrayAccess
         $default_properties = static::$_field_types;
         $properties = array_keys(self::get_public_properties($class));
 
-        $columns = array_keys($pdo->list_columns($table));
+        $columns = array_keys($pdo->list_columns($table, false));
         $current_fk_fields = $pdo->list_foreign_keys($table);
 
         $fk_fields = array();
@@ -583,7 +580,12 @@ class _orm implements ArrayAccess
         $res = '';
 
         if (!empty($missing_cols) || !empty($removed_cols)) {
-            $res .= $pdo->alter_table($table, $missing_cols, $removed_cols, $execute);
+            $typed_missing_cols = [];
+            $types = static::generate_field_types();
+            foreach ($missing_cols as $missing_col) {
+                $typed_missing_cols[$missing_col] = $types[$missing_col];
+            }
+            $res .= $pdo->alter_table($table, $typed_missing_cols, $removed_cols, $execute);
         }
         if (!empty($fk_fields)) {
             $res .= $pdo->alter_keys($table, $fk_fields, $execute);
@@ -604,11 +606,21 @@ class _orm implements ArrayAccess
         $class = get_called_class();
         $pdo = static::get_pdo();
         $public_properties = array_keys(self::get_public_properties($class));
-        $field_types = array();
+        $base_types = static::get_field_types();
+        $field_types = [];
         foreach ($public_properties as $property) {
-            $field_types[$property] = $pdo->name_to_type($property);
+            if (isset($base_types[$property])) {
+                $field_types[$property] =  $base_types[$property];
+            } else {
+                $field_types[$property] = $pdo->name_to_type($property);
+            }
         }
         return $field_types;
+    }
+
+    static function get_field_types()
+    {
+        return [];
     }
 
     /**
@@ -731,7 +743,7 @@ class _orm implements ArrayAccess
      * @param string|array $order_by (optional) Pass null to remove order by clause
      * @param string|array $limit (optional)
      * @param array $params (optional)
-     * @return array
+     * @return static[]
      */
     static function find($where = null, $order_by = '', $limit = null, $params = array())
     {
@@ -753,7 +765,7 @@ class _orm implements ArrayAccess
      * @param string|array $where (optional)
      * @param string|array $order_by (optional) If an array, order_by is used as params
      * @param array $params (optional)
-     * @return array
+     * @return static
      */
     static function find_one($where = null, $order_by = '', $limit = null, $params = array())
     {
@@ -851,6 +863,20 @@ class _orm implements ArrayAccess
         return $map;
     }
 
+    static function select_org_by($org, $query = null, $order_by = '', $limit = null, $fields = '*', $params = array())
+    {
+
+        if ($org == "") {
+            $org = "id";
+        }
+        $res = self::select($query, $order_by, $limit, $fields, $params);
+        $final = array();
+        foreach ($res as $k => $v) {
+            $final[$v[$org]] = $v;
+        }
+        return $final;
+    }
+
     /* orm instance methods */
 
     /**
@@ -901,7 +927,7 @@ class _orm implements ArrayAccess
      * Save the record
      * @return bool
      */
-    function save()
+    function save($force_created = false)
     {
         $pdo = static::get_pdo();
         $table = static::get_table();
@@ -917,7 +943,7 @@ class _orm implements ArrayAccess
 
         //create the record
         if (!$this->exists()) {
-            if (array_key_exists('created_at', $properties)) {
+            if (!$force_created && array_key_exists('created_at', $properties)) {
                 $properties['created_at'] = _datetime::now_db();
             }
             if (array_key_exists('user_id', $properties) && empty($properties['user_id'])) {
@@ -942,8 +968,9 @@ class _orm implements ArrayAccess
             if ($result) {
                 $this->id = $result;
             }
-        } else {
-            //update the record
+        }
+        //update the record
+        else {
             //check if the record has changed
             $changed_properties = $this->get_changed_fields();
             if (array_key_exists('updated_at', $properties)) {
@@ -1334,6 +1361,7 @@ class _orm implements ArrayAccess
         $relation = $this->is_related($name);
 
         if ($relation) {
+
             switch ($relation['type']) {
                 case 'has_one':
                     $record = $this->has_one($name);
@@ -1403,8 +1431,9 @@ class _orm implements ArrayAccess
                     );
                 }
             }
-        } else {
-            // many
+        }
+        //* many
+        else {
             if (count($pk_fields) > 1) {
                 throw new Exception('Multiple primary keys not supported in *-many relations');
             }
@@ -1413,9 +1442,8 @@ class _orm implements ArrayAccess
             $properties = array_keys(self::get_public_properties($singular_name));
             $pk_field = $class . '_' . $pk;
 
-
+            //has many
             if (in_array($pk_field, $properties)) {
-                //has many
                 return array(
                     'type' => 'has_many',
                     'table' => $class,
@@ -1423,8 +1451,9 @@ class _orm implements ArrayAccess
                     'foreign_column' => $pk_field,
                     'foreign_table' => $foreign_table
                 );
-            } else {
-                //many many
+            }
+            //many many
+            else {
                 //join table can be model1_model2 or the reverse
                 $join_table = $class . '_' . $singular_name;
                 if (!class_exists($join_table)) {

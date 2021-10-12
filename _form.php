@@ -573,6 +573,10 @@ class _form_date extends _form_input
             }
         }
 
+        //		if($this->value()) {
+        //			$options['defaultDate'] = (string)$this->value();
+        //		}
+
         return "$('#" . $this->id() . "').datepicker(" . json_encode($options, JSON_UNESCAPED_SLASHES) . ");";
     }
 
@@ -615,6 +619,9 @@ class _form_date extends _form_input
             $html = '<input type="hidden" name="' . $attrs['name'] . '" value="' . $attrs['value'] . '" rel="' . $this->id() . '">';
             $attrs['name'] = $attrs['name'] . '_formatted';
             $attrs['name'] = str_replace(']_formatted', '_formatted]', $attrs['name']); //fix closing brackets
+            //			if($this->use_js_datepicker) {
+            //				unset($attrs['value']);
+            //			}
             if (isset(self::$default_options['userFormat']) && $attrs['value']) {
                 $attrs['value'] = date(self::$default_options['userFormat'], strtotime((string) $attrs['value']));
             }
@@ -634,10 +641,12 @@ class _form_date extends _form_input
  */
 class _form_daterange extends _form_input
 {
+
     public static $default_options = array(
         'separator' => ' - ',
         'startOfWeek' => 'monday',
         'format' => 'YYYY-MM-DD',
+        //		'autoClose' => true
     );
     protected $datepicker_options = array();
     protected $custom_options;

@@ -33,6 +33,8 @@ class _table
     protected $form_method = 'post';
     protected $columns_width = array();
     protected $row_style = '';
+    protected $title;
+    protected $total_results;
 
     public function __construct()
     {
@@ -44,9 +46,12 @@ class _table
         return $this->row_style;
     }
 
-    /**
-     * Can set a background-color array[1] if data has a field name like array[0]
-     */
+    /*
+	 * @param = array
+	 *
+	 * Can set a background-color array[1] if data has a field name like array[0]
+	 *
+	 */
     public function set_row_style($row_style)
     {
         $this->row_style = $row_style;
@@ -56,6 +61,16 @@ class _table
     public function get_identifier()
     {
         return $this->identifier;
+    }
+
+    public function set_title($title)
+    {
+        $this->title = $title;
+    }
+
+    public function get_title()
+    {
+        return $this->title;
     }
 
     public function set_identifier($id)
@@ -118,6 +133,18 @@ class _table
     {
         $headers = _::arrayify($headers);
         $this->headers = $headers;
+        return $this;
+    }
+
+    public function get_total_results()
+    {
+        return $this->total_results;
+    }
+
+    public function set_total_results($results = null)
+    {
+        $results = _::arrayify($results);
+        $this->total_results = $results;
         return $this;
     }
 
@@ -227,6 +254,7 @@ class _table
         $matches = array();
 
         while ($token !== false) :
+
             // 1. open and closing tags on same line - no change
             if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) :
                 $indent = 0;
@@ -400,6 +428,9 @@ class _table
 
     public function render($return = false)
     {
+        if ($this->title) {
+            $this->html .= '<h3>' . $this->title . '</h3>';
+        }
         if ($this->headers) {
             $headers = '';
             if ($this->selectable) {
@@ -462,8 +493,9 @@ class _table
                         $v = isset($data[$header]) ? $data[$header] : null;
                         $this->html .= $this->tag('td', $v);
                     }
-                } else {
-                    //or display everything
+                }
+                //or display everything
+                else {
                     foreach ($data as $k => $v) {
                         $this->html .= $this->tag('td', $v);
                     }
@@ -471,6 +503,21 @@ class _table
                 if ($this->actions) {
                     $actions = $this->make_actions($value);
                     $this->html .= $this->tag('td', $actions);
+                }
+                $this->html .= '</tr>';
+            }
+
+            if ($this->total_results) {
+                $this->html .= '<tr>';
+                $size = count($this->headers);
+
+                for ($td = 0; $td < $size - 1; $td++) {
+                    $this->html .= '<td></td>';
+                }
+                $this->html .= '<td></td></tr>';
+                $this->html .= '<tr>';
+                foreach ($this->total_results as $result) {
+                    $this->html .= '<td>' . $result . '</td>';
                 }
                 $this->html .= '</tr>';
             }
@@ -624,8 +671,9 @@ SCRIPT;
                 if (is_int($action) && is_string($label)) {
                     $action = $label;
                     $arr['label'] = ucwords(str_replace('_', ' ', $action));
-                } else {
-                    //param was array('delete' => 'Delete me')
+                }
+                //param was array('delete' => 'Delete me')
+                else {
                     if (is_string($label)) {
                         $arr['label'] = $label;
                     }
