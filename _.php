@@ -16,7 +16,6 @@ require_once __DIR__ . '/_func.php';
  */
 class _
 {
-
     const ENV_DEV = 'dev';
     const ENV_TEST = 'test';
     const ENV_PROD = 'prod';
@@ -148,17 +147,10 @@ class _
     static $log_messages = array();
 
     /**
-     * Provide a swift mailer instance to be used in the ::mail() method
-     * @link http://swiftmailer.org
-     * @var Swift_Mailer
-     */
-    static $mailer;
-
-    /**
      * Default from email
      * @var array
      */
-    static $mail_form = array('underscore' => 'robot@underscore.dev');
+    static $mail_from = array('underscore' => 'robot@underscore.dev');
 
     /**
      * Cache to use for the cache method
@@ -427,7 +419,7 @@ class _
      *
      * @param string $file
      */
-    static function config_load($file)
+    public static function config_load($file)
     {
         if (!is_file($file)) {
             throw new Exception('File does not exist : ' . $file);
@@ -518,7 +510,7 @@ class _
      * @param string $default
      * @return mixed
      */
-    static function config($key, $default = null)
+    public static function config($key, $default = null)
     {
         if (empty(self::$config)) {
             return false;
@@ -526,22 +518,22 @@ class _
         return self::array_path(self::$config, $key, $default);
     }
 
-    static function is_dev()
+    public static function is_dev()
     {
         return self::$env == 'dev';
     }
 
-    static function is_test()
+    public static function is_test()
     {
         return self::$env == 'test';
     }
 
-    static function is_prod()
+    public static function is_prod()
     {
         return self::$env == 'prod';
     }
 
-    static function is_cron()
+    public static function is_cron()
     {
         return php_sapi_name() == 'cli' || empty($_SERVER['REMOTE_ADDR']);
     }
@@ -549,7 +541,7 @@ class _
     /**
      * Examine dev et test settings and set the env
      */
-    static function config_env()
+    public static function config_env()
     {
         $ip = self::real_ip();
         if (in_array($ip, self::$dev_servers)) {
@@ -572,8 +564,9 @@ class _
 
     /**
      * Autoload depend class
+     * Called when you want to create a new class object which has not been loaded yet
      */
-    static function autoload($dir = null)
+    public static function autoload($dir = null)
     {
         if ($dir === null) {
             $dir = __DIR__;
@@ -588,7 +581,7 @@ class _
      * @param string $class
      * @return bool
      */
-    static function autoload_callback($class)
+    public static function autoload_callback($class)
     {
         if (strpos($class, '_') !== 0) {
             return false;
@@ -608,7 +601,7 @@ class _
      * @param string $filename
      * @return string
      */
-    static function template_exists($filename)
+    public static function template_exists($filename)
     {
         $filename = _::template_resolve($filename);
         if (is_file($filename)) {
@@ -623,7 +616,7 @@ class _
      * @param string $filename
      * @return string
      */
-    static function template_resolve($filename)
+    public static function template_resolve($filename)
     {
         if (strpos($filename, '/') === 0) {
             $filename = self::$base_path . $filename;
@@ -646,7 +639,7 @@ class _
      * @param array $vars (optional)
      * @return string
      */
-    static function render($filename, $vars = array())
+    public static function render($filename, $vars = array())
     {
         if (!is_array($vars)) {
             $vars = array('content' => $vars);
@@ -697,7 +690,7 @@ class _
      * @param boolean $strict
      * @param boolean $utf8
      */
-    static function config_php($timezone = 'Europe/Brussels', $strict = true, $utf8 = true)
+    public static function config_php($timezone = 'Europe/Brussels', $strict = true, $utf8 = true)
     {
         date_default_timezone_set($timezone);
         if ($strict) {
@@ -733,7 +726,7 @@ class _
      * @param string $key
      * @return string
      */
-    static function detect_lang($default = null, $key = 'lang')
+    public static function detect_lang($default = null, $key = 'lang')
     {
         //check cookie, session and then input
         $lang = self::cookie($key);
@@ -772,7 +765,7 @@ class _
      * @param string $class
      * @return user
      */
-    static function user($token = 'user_token', $class = 'user')
+    public static function user($token = 'user_token', $class = 'user')
     {
         if (self::$current_user) {
             return self::$current_user;
@@ -796,7 +789,7 @@ class _
      *
      * @param bool $register_on_shutdown (optional)
      */
-    static function track_performances($register_on_shutdown = true)
+    public static function track_performances($register_on_shutdown = true)
     {
         if (defined('START_TIME')) {
             $start_time = START_TIME;
@@ -823,13 +816,15 @@ class _
      *
      * @param bool $return (optional)
      */
-    static function track_performances_callback($return = false)
+    public static function track_performances_callback($return = false)
     {
         if (!self::$debug_bar_enabled) {
             return;
         }
 
-        //TODO : for ajax requests, we should update the parent _track_performances
+        if (self::is_ajax()) {
+            return;
+        }
 
         $colors = array('330000', '333300', '003300', '003333', '000033');
         $color = $colors[array_rand($colors)];
@@ -918,7 +913,7 @@ function _toggle(target) {
      * @param string $uri
      * @return array
      */
-    static function route($uri = null)
+    public static function route($uri = null)
     {
         if ($uri === null) {
             $uri = self::pathinfo();
@@ -961,13 +956,15 @@ function _toggle(target) {
                                 if (in_array($uri_parts[$i], $part_rules)) {
                                     $rule_valid = true;
                                 }
-                            } elseif (is_callable($part_rules)) {
-                                //rule is a function
+                            }
+                            //rule is a function
+                            elseif (is_callable($part_rules)) {
                                 if ($part_rules($uri_parts[$i])) {
                                     $rule_valid = true;
                                 }
-                            } elseif (is_string($part_rules)) {
-                                //rule is a regex or a predefined validator
+                            }
+                            //rule is a regex or a predefined validator
+                            elseif (is_string($part_rules)) {
                                 switch ($part_rules) {
                                     case 'date':
                                         if (strtotime($uri_parts[$i]) !== -1) {
@@ -1006,8 +1003,9 @@ function _toggle(target) {
                                 $invalid_route = true;
                             }
                         }
-                    } else {
-                        //fixed value
+                    }
+                    //fixed value
+                    else {
                         //check if it match
                         if ($part != $uri_parts[$i]) {
                             $invalid_route = true;
@@ -1049,7 +1047,7 @@ function _toggle(target) {
      * Translate in a template
      * @param string $string
      */
-    static function t($string, $lang = null)
+    public static function t($string, $lang = null)
     {
         echo self::translate($string, $lang);
     }
@@ -1060,7 +1058,7 @@ function _toggle(target) {
      * @param string $lang
      * @return string
      */
-    static function translate($string, $lang = null)
+    public static function translate($string, $lang = null)
     {
         if ($lang === null) {
             $lang = self::$lang;
@@ -1098,7 +1096,7 @@ function _toggle(target) {
      *
      * @return string
      */
-    static function real_ip()
+    public static function real_ip()
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
@@ -1124,7 +1122,7 @@ function _toggle(target) {
      * @param bool $trim Should we trim the /
      * @return string
      */
-    static function pathinfo($trim = false)
+    public static function pathinfo($trim = false)
     {
         $pathinfo = $_SERVER['REQUEST_URI'];
         if (!empty($_SERVER['QUERY_STRING'])) {
@@ -1143,7 +1141,7 @@ function _toggle(target) {
      *
      * @return string|bool
      */
-    static function is_mobile()
+    public static function is_mobile()
     {
         $devices = array(
             "android" => "android.*mobile",
@@ -1182,7 +1180,7 @@ function _toggle(target) {
      *
      * @return boolean
      */
-    static function is_ajax()
+    public static function is_ajax()
     {
         return (bool) (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'));
     }
@@ -1192,7 +1190,7 @@ function _toggle(target) {
      *
      * @return boolean
      */
-    static function is_https()
+    public static function is_https()
     {
         return (bool) (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on');
     }
@@ -1202,7 +1200,7 @@ function _toggle(target) {
      *
      * @return string
      */
-    static function method()
+    public static function method()
     {
         return isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) : (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
     }
@@ -1211,7 +1209,7 @@ function _toggle(target) {
      * Is request POST
      * @return bool
      */
-    static function is_post()
+    public static function is_post()
     {
         return self::method() == 'POST';
     }
@@ -1220,7 +1218,7 @@ function _toggle(target) {
      * Is request GET
      * @return bool
      */
-    static function is_get()
+    public static function is_get()
     {
         return self::method() == 'GET';
     }
@@ -1229,7 +1227,7 @@ function _toggle(target) {
      * Is request DELETE
      * @return bool
      */
-    static function is_delete()
+    public static function is_delete()
     {
         return self::method() == 'DELETE';
     }
@@ -1238,7 +1236,7 @@ function _toggle(target) {
      * Is request PUT
      * @return bool
      */
-    static function is_put()
+    public static function is_put()
     {
         return self::method() == 'POST';
     }
@@ -1252,7 +1250,7 @@ function _toggle(target) {
      * @param bool $remove_querystrings
      * @return string  The requested URL without the query string
      */
-    static function url($remove_querystrings = true)
+    public static function url($remove_querystrings = true)
     {
         if ($remove_querystrings) {
             return preg_replace('#\?.*$#D', '', $_SERVER['REQUEST_URI']);
@@ -1266,7 +1264,7 @@ function _toggle(target) {
      * @param mixed $value Leave null if you want to remove the key from the querystring
      * @return string
      */
-    static function querystring($key, $value = null)
+    public static function querystring($key, $value = null)
     {
         $url = self::url(true);
         $sep = ini_get('arg_separator.output');
@@ -1297,7 +1295,7 @@ function _toggle(target) {
      * @param string $url
      * @param bool $force Prevent redirect loops if set to true
      */
-    static function redirect($url, $force = false)
+    public static function redirect($url, $force = false)
     {
         if (strpos($url, '/') === 0) {
             $url = self::domain() . rtrim($url, '/');
@@ -1314,7 +1312,7 @@ function _toggle(target) {
     /**
      * Redirect to previous page
      */
-    static function redirect_back()
+    public static function redirect_back()
     {
         $back_url = self::input('back_url', self::array_get($_SERVER, 'HTTP_REFERER'), null);
         self::redirect($back_url);
@@ -1324,7 +1322,7 @@ function _toggle(target) {
      * Get domain, prefixed with http or https
      * @return string
      */
-    static function domain()
+    public static function domain()
     {
         if (php_sapi_name() == 'cli') {
             return self::$default_server;
@@ -1348,7 +1346,7 @@ function _toggle(target) {
     /**
      * Make sure that we use https
      */
-    static function force_https()
+    public static function force_https()
     {
         if (!self::is_https()) {
             $url = str_replace('http', 'https', self::domain());
@@ -1361,7 +1359,7 @@ function _toggle(target) {
      * @param string|arr $arr
      * @return array
      */
-    static function input_arr($arr)
+    public static function input_arr($arr)
     {
         $arr = _::arrayify($arr);
         $kk = array();
@@ -1371,7 +1369,7 @@ function _toggle(target) {
         return $kk;
     }
 
-    static function session_input($key, $default = null)
+    public static function session_input($key, $default = null)
     {
         $v = self::input($key);
         if ($v) {
@@ -1394,7 +1392,7 @@ function _toggle(target) {
      * @param int|array $filter FILTER_SANITIZE_XXX or an array of valid values
      * @return mixed
      */
-    static function input($key, $default = null, $filter = '')
+    public static function input($key, $default = null, $filter = '')
     {
         if ($filter === '') {
             $filter = FILTER_SANITIZE_SPECIAL_CHARS;
@@ -1522,7 +1520,7 @@ function _toggle(target) {
         $line--;
 
         $fh = fopen($filename, 'r');
-        while (($buffer = fgets($fh)) !== false) {
+        while (($buffer = fgets($fh)) !== FALSE) {
             if ($l == $line) {
                 return $buffer;
             }
@@ -1547,7 +1545,7 @@ function _toggle(target) {
     public static function csv_to_array($filename, $delimiter = 'auto', $header = null)
     {
         if (!file_exists($filename) || !is_readable($filename)) {
-            return false;
+            return FALSE;
         }
 
         if ($delimiter == 'auto') {
@@ -1564,8 +1562,8 @@ function _toggle(target) {
         }
 
         $data = array();
-        if (($handle = fopen($filename, 'r')) !== false) {
-            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+        if (($handle = fopen($filename, 'r')) !== FALSE) {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
                 if ($header !== false && !is_array($header)) {
                     $header = $row;
                 } else {
@@ -1653,7 +1651,7 @@ function _toggle(target) {
      * Debug a variable and stop the script
      * @param mixed $var
      */
-    static function debug($var)
+    public static function debug($var)
     {
         echo '<pre>';
 
@@ -1727,7 +1725,7 @@ function _toggle(target) {
      * @param array $context (optional)
      * @return bool
      */
-    static function log($message, $level = 'info', $context = array())
+    public static function log($message, $level = 'info', $context = array())
     {
         if (!self::$log_enabled) {
             return false;
@@ -1751,7 +1749,7 @@ function _toggle(target) {
             throw new Exception('Invalid log level ' . $level);
         }
 
-        if (self::$log && self::$log instanceof Monolog\Logger) {
+        if (self::$log) {
             //use monolog
             return self::$log->addRecord($level_int, $message, $context);
         }
@@ -1797,36 +1795,6 @@ function _toggle(target) {
         }
         if (!self::is_utf8($subject)) {
             $subject = self::to_utf8($subject);
-        }
-
-        // Use swift mailer if defined
-        if (isset(self::$mailer) && self::$mailer instanceof Swift_Mailer) {
-            // Handle strings
-            if (is_string($to)) {
-                $to = explode(',', $to);
-            }
-            if (is_string($from)) {
-                $from = array($from);
-            }
-            if (is_string($headers)) {
-                $headers = explode("\r\n", $headers);
-            }
-
-            $message = Swift_Message::newInstance($subject)
-                ->setFrom($from)
-                ->setTo($to)
-                ->setBody($message);
-
-            // Set headers
-            $headers = $message->getHeaders();
-            $headers->addTextHeader('Content-type', 'text/html; charset=UTF-8');
-            $headers->addTextHeader('X-Mailer', 'Underscore');
-
-            foreach ($headers as $k => $v) {
-                $headers->addTextHeader($k, $v);
-            }
-
-            return self::$mailer->send($message);
         }
 
         // Handle arrays
@@ -1875,7 +1843,7 @@ function _toggle(target) {
      * @param mixed $value
      * @return mixed
      */
-    static function session($name, $value = null)
+    public static function session($name, $value = null)
     {
         if (!self::session_is_active()) {
             session_start();
@@ -1898,8 +1866,11 @@ function _toggle(target) {
      * @link http://stackoverflow.com/questions/3788369/how-to-tell-if-a-session-is-active
      * @return bool
      */
-    static function session_is_active()
+    public static function session_is_active()
     {
+        if (function_exists('session_status')) {
+            return (session_status() == PHP_SESSION_ACTIVE);
+        }
         $setting = 'session.use_trans_sid';
         $current = ini_get($setting);
         if (false === $current) {
@@ -1914,7 +1885,7 @@ function _toggle(target) {
      *
      * @return bool
      */
-    static function session_destroy()
+    public static function session_destroy()
     {
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -1935,7 +1906,7 @@ function _toggle(target) {
     /**
      * Persist session (remember me feature)
      */
-    static function remember_me($time = '2 weeks')
+    public static function remember_me($time = '2 weeks')
     {
         if (!is_numeric($time)) {
             $time = strtotime($time);
@@ -1966,7 +1937,7 @@ function _toggle(target) {
      * @param bool $httponly (optional)
      * @return mixed
      */
-    static function cookie($name, $value = null, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = true)
+    public static function cookie($name, $value = null, $expire = 0, $path = null, $domain = null, $secure = false, $httponly = true)
     {
         if ($value === null) {
             if (isset($_COOKIE[$name])) {
@@ -2028,8 +1999,9 @@ function _toggle(target) {
      * @param array $options sticky, header, life, glue, theme, corners, speed, easing, log, beforeOpen, open, beforeClose, close, animateOpen, animateClose
      * @return mixed
      */
-    static function growl($message = null, $options = array())
+    public static function growl($message = null, $options = array())
     {
+
         if (_::is_ajax()) {
             echo $message;
             exit();
@@ -2071,7 +2043,7 @@ function _toggle(target) {
      * @param int $precision
      * @return string
      */
-    static function file_size($size, $precision = 2)
+    public static function file_size($size, $precision = 2)
     {
         if ($size <= 0) {
             return '0B';
@@ -2086,9 +2058,9 @@ function _toggle(target) {
      * Create a gd resource from a filename
      *
      * @param string $filename
-     * @return resource
+     * @return GdImage
      */
-    static function image_create($filename)
+    public static function image_create($filename)
     {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         switch ($ext) {
@@ -2113,9 +2085,9 @@ function _toggle(target) {
      * @param string $binary
      * @return string
      */
-    static function image_type_from_binary($binary)
+    public static function image_type_from_binary($binary)
     {
-        if (!preg_match('/\A(?:(GIF8[79]a)|(\xff\xd8\xff)|(\x89PNG\x0d\x0a)))/', $image, $matches)) {
+        if (!preg_match('/\A(?:(GIF8[79]a)|(\xff\xd8\xff)|(\x89PNG\x0d\x0a)))/', $binary, $matches)) {
             return 'application/octet-stream';
         }
         //gif = 1, jpeg = 2, png = 3
@@ -2125,13 +2097,13 @@ function _toggle(target) {
     /**
      * Save a gd resource to a filename
      *
-     * @param resource $image
+     * @param GdImage $image
      * @param string $filename filename or mimetype for browser output
      * @param int $quality 0-100
      * @return bool
      * @throws Exception
      */
-    static function image_save($image, $filename = null, $quality = 75)
+    public static function image_save($image, $filename = null, $quality = 75)
     {
         if (!is_resource($image)) {
             throw new Exception('Image must be a resource');
@@ -2171,7 +2143,7 @@ function _toggle(target) {
      * @param bool $output
      * @return resource
      */
-    static function image_resize($filename, $width = 0, $height = 0, $proportional = true, $output = false)
+    public static function image_resize($filename, $width = 0, $height = 0, $proportional = true, $output = false)
     {
         if ($width <= 0 && $height <= 0) {
             return false;
@@ -2252,7 +2224,7 @@ function _toggle(target) {
      * @return bool
      * @throws Exception
      */
-    static function image_crop($filename, $width = 0, $height = 0, $from_x = '50%', $from_y = '50%', $resize_before = true)
+    public static function image_crop($filename, $width = 0, $height = 0, $from_x = '50%', $from_y = '50%', $resize_before = true)
     {
         if ($resize_before) {
             self::image_resize($filename, $width, $height);
@@ -2314,9 +2286,9 @@ function _toggle(target) {
      * Flip image
      * @param string|resource $filename
      * @param string $mode vertical,horizontal,both
-     * @return type
+     * @return GdImage
      */
-    static function image_flip($filename, $mode = 'vertical')
+    public static function image_flip($filename, $mode = 'vertical')
     {
         $image = $filename;
         if (!is_resource($image)) {
@@ -2370,9 +2342,9 @@ function _toggle(target) {
      * Image auto rotate based on exif data
      * @param string $filename Filename to be examined by exif_read_data
      * @param resource $resource existing resource to use
-     * @return resource
+     * @return GdImage
      */
-    static function image_auto_rotate($filename, $resource = null)
+    public static function image_auto_rotate($filename, $resource = null)
     {
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         if (!in_array(strtolower($ext), array('jpg', 'jpeg'))) {
@@ -2396,14 +2368,14 @@ function _toggle(target) {
                     break;
                 case 5: //vertical flip + 90 rotate right
                     $image = self::image_flip($image, 'vertical');
-                    $image = imagerotate($image, -90);
+                    $image = imagerotate($image, -90, 0);
                     break;
                 case 6: //90 rotate right
                     $image = imagerotate($image, -90, 0);
                     break;
                 case 7: // horizontal flip + 90 rotate right
                     $image = self::image_flip($image, 'horizontal');
-                    $image = imagerotate($image, -90);
+                    $image = imagerotate($image, -90, 0);
                 case 8: // 90 rotate left
                     $image = imagerotate($image, 90, 0);
                     break;
@@ -2415,7 +2387,7 @@ function _toggle(target) {
         return $image;
     }
 
-    static function image_rotate($filename, $dir)
+    public static function image_rotate($filename, $dir)
     {
         $image = self::image_create($filename);
         if (is_string($dir)) {
@@ -2439,7 +2411,7 @@ function _toggle(target) {
      * @param string $filename
      * @return bool|array
      */
-    static function image_location($filename)
+    public static function image_location($filename)
     {
         //get the EXIF
         $exif = exif_read_data($filename);
@@ -2528,7 +2500,7 @@ function _toggle(target) {
      * @param bool $del
      * @return void
      */
-    static function empty_dir($dir, $del = false)
+    public static function empty_dir($dir, $del = false)
     {
         if (!$dh = @opendir($dir))
             return;
@@ -2552,7 +2524,7 @@ function _toggle(target) {
      * @param string $content_type (optional) Content type of the file
      * @param string $filename (optional) Filename of the download
      */
-    static function file_download($file, $content_type = null, $filename = null)
+    public static function file_download($file, $content_type = null, $filename = null)
     {
         if ($content_type === null) {
             $content_type = 'application/force-download';
@@ -2577,7 +2549,7 @@ function _toggle(target) {
      * @param int $limit
      * @return string
      */
-    static function limit($value, $limit)
+    public static function limit($value, $limit)
     {
         if (is_numeric($value)) {
             if ($value > $limit) {
@@ -2608,7 +2580,7 @@ function _toggle(target) {
      * @param string $str
      * @return bool
      */
-    static function is_utf8($str)
+    public static function is_utf8($str)
     {
         return preg_match('%^(?:
               [\x09\x0A\x0D\x20-\x7E]            # ASCII
@@ -2628,7 +2600,7 @@ function _toggle(target) {
      * @param string $str
      * @return string
      */
-    static function encode($str)
+    public static function encode($str)
     {
         return htmlentities($str, ENT_QUOTES, 'UTF-8');
     }
@@ -2642,26 +2614,6 @@ function _toggle(target) {
     public static function to_utf8($str)
     {
         return mb_convert_encoding($str, 'UTF-8', mb_detect_encoding($str));
-    }
-
-    /**
-     * Encrypt a string
-     * @param string $str
-     * @return string
-     */
-    static function encrypt($str)
-    {
-        return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, 'UNDERSCORE', $str, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
-    }
-
-    /**
-     * Decrypt a string
-     * @param string $str
-     * @return string
-     */
-    static function decrypt($str)
-    {
-        return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, 'UNDERSCORE', base64_decode($str), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
     }
 
     /**
@@ -2681,7 +2633,7 @@ function _toggle(target) {
      * @param string $text
      * @return string
      */
-    static function slugify($text)
+    public static function slugify($text)
     {
         // replace non letter or digits by -
         $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
@@ -2769,27 +2721,20 @@ function _toggle(target) {
     {
         $score = 1;
 
-        if (strlen($pwd) < 1) {
-            return $strength[0];
-        }
-        if (strlen($pwd) < 4) {
-            return $strength[1];
-        }
-
-        if (strlen($pwd) >= 8) {
+        if (strlen($password) >= 8) {
             $score++;
         }
-        if (strlen($pwd) >= 10) {
+        if (strlen($password) >= 10) {
             $score++;
         }
 
-        if (preg_match("/[a-z]/", $pwd) && preg_match("/[A-Z]/", $pwd)) {
+        if (preg_match("/[a-z]/", $password) && preg_match("/[A-Z]/", $password)) {
             $score++;
         }
-        if (preg_match("/[0-9]/", $pwd)) {
+        if (preg_match("/[0-9]/", $password)) {
             $score++;
         }
-        if (preg_match("/.[!,@,#,$,%,^,&,*,?,_,~,-,£,(,)]/", $pwd)) {
+        if (preg_match("/.[!,@,#,$,%,^,&,*,?,_,~,-,£,(,)]/", $password)) {
             $score++;
         }
 
@@ -2801,7 +2746,7 @@ function _toggle(target) {
      * @param type $length
      * @return string
      */
-    static function random_string($length = '10')
+    public static function random_string($length = '10')
     {
         $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $alphabet_length = strlen($alphabet);
@@ -2821,7 +2766,7 @@ function _toggle(target) {
      * @param string $salt
      * @return string
      */
-    static function password_hash($password, $salt = null)
+    public static function password_hash($password, $salt = null)
     {
         if (!$salt) {
             $salt = self::random_string(10);
@@ -2840,7 +2785,7 @@ function _toggle(target) {
      * @param string $hash
      * @return bool
      */
-    static function check_password_hash($password, $hash)
+    public static function check_password_hash($password, $hash)
     {
         $salt = substr($hash, 0, 10);
         if (self::password_hash($password, $salt) == $hash) {
@@ -2855,7 +2800,7 @@ function _toggle(target) {
      * @param    string    $word    English noun to pluralize
      * @return string Plural noun
      */
-    static function pluralize($word)
+    public static function pluralize($word)
     {
         $rules = array(
             '([ml])ouse$' => '\1ice',
@@ -2895,7 +2840,7 @@ function _toggle(target) {
      * @param    string    $word    English noun to singularize
      * @return string Singular noun.
      */
-    static function singularize($word)
+    public static function singularize($word)
     {
         $rules = array(
             '([ml])ice$' => '\1ouse',
@@ -2939,7 +2884,7 @@ function _toggle(target) {
      * @param bool $upper_camel_case
      * @return string UpperCamelCasedWord
      */
-    static function camelize($word, $upper_camel_case = true)
+    public static function camelize($word, $upper_camel_case = true)
     {
         $word = str_replace(' ', '', ucwords(preg_replace('/[^A-Z^a-z^0-9]+/', ' ', $word)));
         if ($upper_camel_case) {
@@ -2960,7 +2905,7 @@ function _toggle(target) {
      * @param    string    $word    Word to underscore
      * @return string Underscored word
      */
-    static function underscorize($word)
+    public static function underscorize($word)
     {
         return strtolower(preg_replace('/[^A-Z^a-z^0-9]+/', '_', preg_replace('/([a-zd])([A-Z])/', '1_2', preg_replace('/([A-Z]+)([A-Z][a-z])/', '1_2', $word))));
     }
@@ -2980,7 +2925,7 @@ function _toggle(target) {
      * instead of just the first one.
      * @return string Human-readable word
      */
-    static function humanize($word, $uppercase = '')
+    public static function humanize($word, $uppercase = '')
     {
         $uppercase = $uppercase == 'all' ? 'ucwords' : 'ucfirst';
         return $uppercase(str_replace('_', ' ', preg_replace('/_id$/', '', $word)));
@@ -2994,7 +2939,7 @@ function _toggle(target) {
      * @param    integer    $number    Number to get its ordinal value
      * @return string Ordinal representation of given string.
      */
-    static function ordinalize($number)
+    public static function ordinalize($number)
     {
         if (in_array(($number % 100), range(11, 13))) {
             return $number . 'th';
@@ -3027,7 +2972,7 @@ function _toggle(target) {
      * @param boolean $exact If false, $text will not be cut mid-word
      * @return string Trimmed string.
      */
-    static function truncate($text, $length = 100, $ending = '...', $exact = true)
+    public static function truncate($text, $length = 100, $ending = '...', $exact = true)
     {
 
         if (mb_strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
@@ -3111,7 +3056,7 @@ function _toggle(target) {
      * @param string $unit K = Kilometers (default), N = Nautical miles, M = Miles
      * @return int
      */
-    static function distance($lat1, $lon1, $lat2, $lon2, $unit = 'K')
+    public static function distance($lat1, $lon1, $lat2, $lon2, $unit = 'K')
     {
         if ($lat1 == $lat2 && $lon1 == $lon2)
             return 0;
@@ -3131,7 +3076,7 @@ function _toggle(target) {
         }
     }
 
-    static function distance_google($lat1, $lon1, $lat2, $lon2)
+    public static function distance_google($lat1, $lon1, $lat2, $lon2)
     {
         $url = 'https://maps.googleapis.com/maps/api/distancematrix/json?sensor=false&mode=driving&origins=' . $lat1 . ',' . $lon1 . '&destinations=' . $lat2 . ',' . $lon2;
 
@@ -3154,7 +3099,7 @@ function _toggle(target) {
      * @param string $color
      * @return string
      */
-    static function highlight($str, $words, $color = 'yellow')
+    public static function highlight($str, $words, $color = 'yellow')
     {
         $words = self::arrayify($words);
 
@@ -3173,7 +3118,7 @@ function _toggle(target) {
      * @param bool $assoc
      * @return array|object
      */
-    static function json_decode($json, $assoc = false)
+    public static function json_decode($json, $assoc = false)
     {
         $result = json_decode($json, $assoc);
         switch (json_last_error()) {
@@ -3213,7 +3158,7 @@ function _toggle(target) {
      * @param mixed $default
      * @return mixed
      */
-    static function array_path(array $array, $index, $default = null)
+    public static function array_path(array $array, $index, $default = null)
     {
         $loc = &$array;
         foreach (explode('.', $index) as $step) {
@@ -3233,7 +3178,7 @@ function _toggle(target) {
      * @param string $index
      * @param mixed $default
      */
-    static function array_get(array $array, $index, $default = null)
+    public static function array_get(array $array, $index, $default = null)
     {
         if (isset($array[$index])) {
             return $array[$index];
@@ -3249,7 +3194,7 @@ function _toggle(target) {
      * @param mixed $value
      * @return mixed
      */
-    static function array_set(array $array, $index, $value)
+    public static function array_set(array $array, $index, $value)
     {
         $loc = &$array;
         foreach (explode('.', $index) as $step) {
@@ -3269,7 +3214,7 @@ function _toggle(target) {
      *
      * @return array
      */
-    static function array_group_by($arr, $key)
+    public static function array_group_by($arr, $key)
     {
 
         if (!is_array($arr)) {
@@ -3308,7 +3253,7 @@ function _toggle(target) {
 
     // End array_group_by
 
-    static function array_rand(array $arr)
+    public static function array_rand(array $arr)
     {
         return $arr[array_rand($arr) - 1];
     }
@@ -3320,7 +3265,7 @@ function _toggle(target) {
      * @param string $index
      * @return array
      */
-    static function array_list($array, $index)
+    public static function array_list($array, $index)
     {
         $list = array();
         if (empty($array)) {
@@ -3346,7 +3291,7 @@ function _toggle(target) {
      * @param array $arr
      * @return bool
      */
-    static function array_is_assoc(array $array)
+    public static function array_is_assoc(array $array)
     {
         //don't use array_keys or array_values because it takes a lot of memory for large arrays
         foreach ($array as $k => $v) {
@@ -3365,7 +3310,7 @@ function _toggle(target) {
      * @param bool $trim (for string parameters)
      * @return array
      */
-    static function arrayify($var, $delimiter = ',', $trim = true)
+    public static function arrayify($var, $delimiter = ',', $trim = true)
     {
         if (is_array($var)) {
             return $var;
@@ -3396,7 +3341,7 @@ function _toggle(target) {
      * @param string $glue
      * @return string
      */
-    static function stringify($var, $glue = ',')
+    public static function stringify($var, $glue = ',')
     {
         if (empty($var)) {
             return '';
@@ -3431,7 +3376,7 @@ function _toggle(target) {
      * @param string $address
      * @return array
      */
-    static function geocode($address)
+    public static function geocode($address)
     {
         if (!is_string($address)) {
             throw new Exception("All Addresses must be passed as a string");
@@ -3449,7 +3394,7 @@ function _toggle(target) {
         return $coords;
     }
 
-    static function pretty_json($json)
+    public static function pretty_json($json)
     {
 
         $result = '';
@@ -3501,7 +3446,7 @@ function _toggle(target) {
         return $result;
     }
 
-    static function get_max_upload_size()
+    public static function get_max_upload_size()
     {
         $max_upload = (int) (ini_get('upload_max_filesize'));
         $max_post = (int) (ini_get('post_max_size'));
@@ -3516,7 +3461,7 @@ function _toggle(target) {
      * @param float $lng
      * @return string
      */
-    static function reverse_geocode($lat, $lng)
+    public static function reverse_geocode($lat, $lng)
     {
         $url = "http://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=false";
         $data = file($url);
@@ -3533,7 +3478,7 @@ function _toggle(target) {
      *
      * @param string $url
      */
-    static function tinyurl($url)
+    public static function tinyurl($url)
     {
         return file_get_contents("http://tinyurl.com/api-create.php?url=" . $url);
     }
@@ -3543,7 +3488,7 @@ function _toggle(target) {
      *
      * @param string $tinyurl
      */
-    static function untinyurl($tinyurl)
+    public static function untinyurl($tinyurl)
     {
         if ($fp = fsockopen("tinyurl.com", 80, $errno, $errstr, 30)) {
             if ($fp) {
@@ -3567,7 +3512,7 @@ function _toggle(target) {
      * @param string $ret
      * @return string
      */
-    static function twitterify($ret)
+    public static function twitterify($ret)
     {
         $ret = preg_replace("#(^|[\n ])([\w]+?://[\w]+[^ \"\n\r\t< ]*)#", "\\1\\2", $ret);
         $ret = preg_replace("#(^|[\n ])((www|ftp)\.[^ \"\t\n\r< ]*)#", "\\1\\2", $ret);
@@ -3582,7 +3527,7 @@ function _toggle(target) {
      * @param string $username
      * @return array
      */
-    static function twitter_feed($username, $num = 10)
+    public static function twitter_feed($username, $num = 10)
     {
         $json = file_get_contents("http://twitter.com/status/user_timeline/tareq_cse.json?count=" . $num, true); //getting the file content
         $decode = json_decode($json, true); //getting the file content as array
@@ -3595,7 +3540,7 @@ function _toggle(target) {
      * @param string $hashtag
      * @return array
      */
-    static function twitter_feed_hashtag($hashtag)
+    public static function twitter_feed_hashtag($hashtag)
     {
         $json = file_get_contents("http://search.twitter.com/search.json?rpp=100&q=%23" . $hashtag);
         $decode = json_decode($json, true); //getting the file content as array
@@ -3607,7 +3552,7 @@ function _toggle(target) {
      * @param string $url
      * @return int
      */
-    static function tweets_count($url)
+    public static function tweets_count($url)
     {
 
         $json_string = file_get_contents('http://urls.api.twitter.com/1/urls/count.json?url=' . $url);
@@ -3621,7 +3566,7 @@ function _toggle(target) {
      * @param string $url
      * @return string
      */
-    static function likes_count($url)
+    public static function likes_count($url)
     {
 
         $json_string = file_get_contents('http://graph.facebook.com/?ids=' . $url);
@@ -3635,9 +3580,8 @@ function _toggle(target) {
      * @param string $url
      * @return int
      */
-    static function plusones_count($url)
+    public static function plusones_count($url)
     {
-
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, "https://clients6.google.com/rpc");
         curl_setopt($curl, CURLOPT_POST, 1);
@@ -3660,7 +3604,7 @@ function _toggle(target) {
      * @param array $data
      * @return boolean
      */
-    static function mail_merge($template, $output, array $data = array())
+    public static function mail_merge($template, $output, array $data = array())
     {
         if (!copy($template, $output)) {
             // make a duplicate so we dont overwrite the template
@@ -3954,7 +3898,7 @@ class _datetime extends DateTime
 
     /* static helpers */
 
-    static function seconds_to_time($secs)
+    public static function seconds_to_time($secs)
     {
         $times = array(3600, 60, 1);
         $time = '';
@@ -3981,7 +3925,7 @@ class _datetime extends DateTime
      * @param string $day
      * @return string
      */
-    static function day_abbrev($day = null)
+    public static function day_abbrev($day = null)
     {
         if (empty($day)) {
             return false;
@@ -4012,7 +3956,7 @@ class _datetime extends DateTime
      * @param bool $abbrev_as_key use abbreviation (mon) instead of number (1)
      * @return array
      */
-    static function week_days($abbrev_as_key = true)
+    public static function week_days($abbrev_as_key = true)
     {
         if ($abbrev_as_key) {
             return array(
@@ -4041,7 +3985,7 @@ class _datetime extends DateTime
      * @param bool $day_as_key use day (Monday) instead of num (1)
      * @return
      */
-    static function week_days_abbrev($day_as_key = false)
+    public static function week_days_abbrev($day_as_key = false)
     {
         if ($day_as_key) {
             return array(
@@ -4067,7 +4011,7 @@ class _datetime extends DateTime
 
     /* static factory */
 
-    static function createFromFormat($f, $t, $tz = null)
+    public static function createFromFormat($f, $t, $tz = null)
     {
         if (!$tz) {
             $tz = new DateTimeZone(date_default_timezone_get());
@@ -4079,7 +4023,7 @@ class _datetime extends DateTime
         return new static($dt->format('Y-m-d H:i:s e'));
     }
 
-    static function from_datetime($time = null)
+    public static function from_datetime($time = null)
     {
         if (empty($time) || $time == '0000-00-00 00:00:00') {
             return null;
@@ -4087,7 +4031,7 @@ class _datetime extends DateTime
         return static::createFromFormat('Y-m-d H:i:s', $time);
     }
 
-    static function from_date($time = null)
+    public static function from_date($time = null)
     {
         if (empty($time) || $time == '0000-00-00') {
             return null;
@@ -4100,7 +4044,7 @@ class _datetime extends DateTime
         return $dt;
     }
 
-    static function from_time($time = null)
+    public static function from_time($time = null)
     {
         if (empty($time) || $time == '00:00:00') {
             return null;

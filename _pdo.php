@@ -244,10 +244,8 @@ class _pdo extends PDO
      * @param string $statement
      * @return _pdo_statement
      */
-    public function query($statement, $fetchMode = null, $colno = 0)
+    public function query($statement, $fetch_style = null, $arg1 = null, $arg2 = null)
     {
-        $sql = $this->translate($statement);
-
         try {
             $time = microtime(true);
             $result = parent::query($statement);
@@ -379,12 +377,12 @@ class _pdo extends PDO
      *
      * Return something like
      * Array(
-     * [0] => Array(
-     * [column_name] => 'name'
-     * [foreign_db] => 'db,
-     * [foreign_table] => 'company',
-     * [foreign_column] => 'id'
-     * )
+     * 	[0] => Array(
+     * 	[column_name] => 'name'
+     *  [foreign_db] => 'db,
+     *  [foreign_table] => 'company',
+     *  [foreign_column] => 'id'
+     * 	)
      * )
      * @return array
      */
@@ -491,9 +489,13 @@ ORDER BY
             } else {
                 $type = 'INT AUTO_INCREMENT';
             }
-        } elseif ($name == 'guid' || $name == 'uiid' || preg_match(':_guid$:', $name) || preg_match(':_uuid$:', $name)) {
+        }
+        //guid
+        elseif ($name == 'guid' || $name == 'uiid' || preg_match(':_guid$:', $name) || preg_match(':_uuid$:', $name)) {
             $type = 'BINARY(36)'; //don't store charset/collation
-        } elseif ($name == 'name') {
+        }
+        //varchar
+        elseif ($name == 'name') {
             $type = 'VARCHAR(45)';
         } elseif ($name == 'zipcode') {
             $type = 'VARCHAR(20)';
@@ -501,17 +503,29 @@ ORDER BY
             $type = 'VARCHAR(45)'; //ipv6 storage
         } elseif ($name == 'lang_code' || $name == 'country_code') {
             $type = 'VARCHAR(2)';
-        } elseif ($name === 'price' || preg_match(':_price$:', $name)) {
+        }
+        //price
+        elseif ($name === 'price' || preg_match(':_price$:', $name)) {
             $type = 'DECIMAL(10,2) UNSIGNED';
-        } elseif (preg_match(':_id$:', $name) || preg_match(':_count$:', $name) || preg_match(':_quantity$:', $name) || preg_match(':_qt$:', $name) || preg_match(':_level$:', $name) || preg_match(':_number$:', $name) || $name == 'level' || $name == 'percent' || $name == 'quantity' || $name == 'sort_order' || $name == 'permissions' || $name == 'perms' || $name == 'day') {
+        }
+        //int
+        elseif (preg_match(':_id$:', $name) || preg_match(':_count$:', $name) || preg_match(':_quantity$:', $name) || preg_match(':_qt$:', $name) || preg_match(':_level$:', $name) || preg_match(':_number$:', $name) || $name == 'level' || $name == 'percent' || $name == 'quantity' || $name == 'sort_order' || $name == 'permissions' || $name == 'perms' || $name == 'day') {
             $type = 'INT';
-        } elseif ($name == 'lat' || $name == 'lng' || $name == 'lon' || $name == 'latitude' || $name == 'longitude' || preg_match(':_lat:', $name) || preg_match(':_lng:', $name)) {
+        }
+        //geo
+        elseif ($name == 'lat' || $name == 'lng' || $name == 'lon' || $name == 'latitude' || $name == 'longitude' || preg_match(':_lat:', $name) || preg_match(':_lng:', $name)) {
             $type = 'FLOAT(10,6)';
         } elseif ($name == 'geoloc_precision') {
             $type = 'DECIMAL(10)';
-        } elseif (strpos($name, 'is_') === 0 || strpos($name, 'has_') === 0) {
+        }
+        //bool
+        elseif (strpos($name, 'is_') === 0 || strpos($name, 'has_') === 0) {
             $type = 'TINYINT';
-        } elseif ($name == 'datetime' || preg_match(':_at$:', $name)) {
+        }
+        //date
+        elseif (
+            $name == 'datetime' || preg_match(':_at$:', $name)
+        ) {
             $type = 'DATETIME';
         } elseif ($name == 'date' || $name == 'birthday' || $name == 'birthdate' || preg_match(':_date$:', $name) || strpos($name, 'date_') === 0) {
             $type = 'DATE';
@@ -519,7 +533,9 @@ ORDER BY
             $type = 'TIME';
         } elseif (preg_match(':_ts$:', $name)) {
             $type = 'TIMESTAMP';
-        } elseif (preg_match(':_html$:', $name) || preg_match(':_text$:', $name) || $name == 'content') {
+        }
+        //text
+        elseif (preg_match(':_html$:', $name) || preg_match(':_text$:', $name) || $name == 'content') {
             $type = 'TEXT';
         }
         return $type;
@@ -529,18 +545,79 @@ ORDER BY
      * All columns from a table
      *
      * @param string $table
+     * @param bool $forcePdo
      * @return array
      */
-    function list_columns($table)
+    function list_columns($table, $forcePdo = true)
     {
-        $sql = 'SELECT * FROM ' . $table . ' LIMIT 1';
+        $type = $this->get_dbtype();
 
-        $stmt = $this->query($sql);
+        if ($forcePdo) {
+            $type = "default";
+        }
 
-        $i = 0;
-        $infos = array();
-        while ($column = $stmt->getColumnMeta($i++)) {
-            $infos[$column['name']] = $column;
+        $infos = [];
+        switch ($type) {
+            case "mysql":
+                $sql = "SHOW COLUMNS FROM $table";
+                $result = $this->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+                /*
+                    [0] => Array
+        (
+            [Field] => id
+            [Type] => int(11)
+            [Null] => NO
+            [Key] => PRI
+            [Default] =>
+            [Extra] => auto_increment
+        )
+        */
+                foreach ($result as $row) {
+                    $flags = [];
+                    if ($row["Null"] == "NO") {
+                        $flags[] = "not_null";
+                    }
+                    if ($row["Key"] == "PRI") {
+                        $flags[] = "primary_key";
+                    }
+                    $len = (int)preg_replace('/[^0-9,]*/', '', $row['Type']);
+                    $parts = explode(",", $len);
+                    $precision = $parts[1] ?? 0;
+                    $len = $parts[0];
+                    $infos[$row['Field']] = [
+                        "native_type" => null,
+                        "pdo_type" => null,
+                        "flags" => $flags,
+                        "table" => $table,
+                        "name" => $row["Field"],
+                        "len" => $len,
+                        "precision" => $precision,
+                    ];
+                }
+                break;
+            default:
+                $sql = 'SELECT * FROM ' . $table . ' LIMIT 1';
+                $stmt = $this->query($sql);
+                $i = 0;
+                while ($column = $stmt->getColumnMeta($i++)) {
+                    /*[id] => Array
+                    (
+                        [native_type] => LONG
+                        [pdo_type] => 2
+                        [flags] => Array
+                            (
+                                [0] => not_null
+                                [1] => primary_key
+                            )
+
+                        [table] => category
+                        [name] => id
+                        [len] => 11
+                        [precision] => 0*/
+                    $infos[$column['name']] = $column;
+                }
+                break;
         }
         return $infos;
     }
@@ -685,7 +762,7 @@ ORDER BY
             return false;
         }
         $sql = 'UPDATE ' . $table . " SET \n";
-        self::to_named_params($where, $params);
+        $this->to_named_params($where, $params);
         foreach ($data as $k => $v) {
             if ($v === '' || $v === null) {
                 $v = null;
@@ -838,12 +915,31 @@ HAVING ( COUNT($field) > 1 )";
     }
 
     /**
+     * Count the records
+     *
+     * @param string $table
+     * @param array|string $where
+     * @param array $params
+     * @return type
+     */
+    function id_count($table, $where = null, $params = array())
+    {
+        $sql = 'SELECT COUNT(id) FROM ' . $table . '';
+        $this->inject_where($sql, $where, $params);
+        $sql = $this->translate($sql);
+        $stmt = $this->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchColumn();
+        return (int) $results;
+    }
+
+    /**
      * A quick fix to convert ? to named params
      *
      * @param string $where
      * @param array $params
      */
-    protected static function to_named_params(&$where, array &$params)
+    function to_named_params(&$where, array &$params)
     {
         if (is_string($where) && preg_match('/\?/', $where, $matches)) {
             $matches_count = count($matches);
@@ -1018,7 +1114,6 @@ HAVING ( COUNT($field) > 1 )";
      */
     function alter_table($table, array $add_fields = array(), array $remove_fields = array(), $execute = true)
     {
-
         $add_fields = $this->add_field_type($add_fields);
 
         $sql = 'ALTER TABLE ' . $table . "\n";
