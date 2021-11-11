@@ -88,6 +88,11 @@ class _
     static $tracked_stats = array();
 
     /**
+     * @string
+     */
+    static $default_server = 'localhost';
+
+    /**
      * Env (dev, test or prod)
      * @var string
      */
@@ -1322,15 +1327,22 @@ function _toggle(target) {
     static function domain()
     {
         if (php_sapi_name() == 'cli') {
-            return 'cli';
+            return self::$default_server;
         }
 
-        $port = (isset($_SERVER['SERVER_PORT'])) ? $_SERVER['SERVER_PORT'] : null;
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
-            return 'https://' . $_SERVER['SERVER_NAME'] . ($port && $port != 443 ? ':' . $port : '');
+        $port = '';
+        $protocol = 'http';
+        if (!in_array($_SERVER['SERVER_PORT'], [80, 443])) {
+            $port = ":$_SERVER[SERVER_PORT]";
         } else {
-            return 'http://' . $_SERVER['SERVER_NAME'] . ($port && $port != 80 ? ':' . $port : '');
+            $port = '';
         }
+
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+            $protocol = 'https';
+        }
+
+        return $protocol . '://' . $_SERVER['SERVER_NAME'] . $port;
     }
 
     /**
