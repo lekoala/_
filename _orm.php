@@ -1361,17 +1361,16 @@ class _orm implements ArrayAccess
         $relation = $this->is_related($name);
 
         if ($relation) {
-
             switch ($relation['type']) {
                 case 'has_one':
                     $record = $this->has_one($name);
                     if (isset($arguments[0]) && $record) {
-                        if (method_exists($record, $arguments[0])) {
-                            $method = $arguments[0];
-                            return $record->$method();
+                        $arg = $arguments[0];
+                        if (method_exists($record, $arg)) {
+                            return $record->$arg();
                         }
-                        if (isset($record->$arguments[0])) {
-                            return $record->$arguments[0];
+                        if (isset($record->$arg)) {
+                            return $record->$arg;
                         }
                         return false;
                     }
