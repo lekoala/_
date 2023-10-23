@@ -449,6 +449,7 @@ class _
                 self::$pdo = new _pdo($config['db']);
             } catch (Exception $e) {
                 echo '<pre>Failed to connect to the database :' . "\n";
+                $config['db']['password'] = "***";
                 print_r($config['db']);
                 exit();
             }
@@ -703,7 +704,6 @@ class _
         if ($utf8) {
             mb_internal_encoding('UTF-8');
             mb_http_output('UTF-8');
-            mb_http_input('UTF-8');
             mb_language('uni');
             mb_regex_encoding('UTF-8');
             ob_start('mb_output_handler');
@@ -711,7 +711,6 @@ class _
         } else {
             mb_internal_encoding('ISO-8859-1');
             mb_http_output('ISO-8859-1');
-            mb_http_input('ISO-8859-1');
             mb_language('en');
             mb_regex_encoding('ISO-8859-1');
         }
@@ -1520,7 +1519,7 @@ function _toggle(target) {
         $line--;
 
         $fh = fopen($filename, 'r');
-        while (($buffer = fgets($fh)) !== FALSE) {
+        while (($buffer = fgets($fh)) !== false) {
             if ($l == $line) {
                 return $buffer;
             }
@@ -1545,7 +1544,7 @@ function _toggle(target) {
     public static function csv_to_array($filename, $delimiter = 'auto', $header = null)
     {
         if (!file_exists($filename) || !is_readable($filename)) {
-            return FALSE;
+            return false;
         }
 
         if ($delimiter == 'auto') {
@@ -1562,8 +1561,8 @@ function _toggle(target) {
         }
 
         $data = array();
-        if (($handle = fopen($filename, 'r')) !== FALSE) {
-            while (($row = fgetcsv($handle, 1000, $delimiter)) !== FALSE) {
+        if (($handle = fopen($filename, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
                 if ($header !== false && !is_array($header)) {
                     $header = $row;
                 } else {
@@ -1699,7 +1698,7 @@ function _toggle(target) {
                     case 'resource':
                         return '<span style="color:orange">Resource</span>';
                     case 'boolean':
-                        return $arg ? 'TRUE' : 'FALSE';
+                        return $arg ? 'TRUE' : 'false';
                     case 'NULL':
                         return 'NULL';
                     default:
@@ -3651,6 +3650,7 @@ class _datetime extends DateTime
      * @param Datetime|String $date
      * @return DateInterval
      */
+    #[\ReturnTypeWillChange]
     public function diff($date = 'now', $absolute = null)
     {
         if (!($date instanceof DateTime)) {
@@ -4011,6 +4011,7 @@ class _datetime extends DateTime
 
     /* static factory */
 
+    #[\ReturnTypeWillChange]
     public static function createFromFormat($f, $t, $tz = null)
     {
         if (!$tz) {

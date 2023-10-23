@@ -1065,6 +1065,10 @@ class _orm implements ArrayAccess
         //transform date object
         //TODO: avoid doing that up front, instead it would be faster to analyze schema and transform only if needed
         foreach ($this->_original as $k => $v) {
+            if (!$v) {
+                continue;
+            }
+            $date = $time = $datetime = [];
             preg_match('/^(\d{4}-\d{2}-\d{2})$/', $v, $date);
             preg_match('/^(\d{2}:\d{2}:\d{2})$/', $v, $time);
             preg_match('/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/', $v, $datetime);
@@ -1567,6 +1571,7 @@ class _orm implements ArrayAccess
 
     //ArrayAccess
 
+    #[\ReturnTypeWillChange]
     public function offsetExists($field)
     {
         if ($this->offsetGet($field) !== null) {
@@ -1575,6 +1580,7 @@ class _orm implements ArrayAccess
         return false;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($field)
     {
         $value = null;
@@ -1601,6 +1607,7 @@ class _orm implements ArrayAccess
         return $value;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($field, $value)
     {
         if (property_exists($this, $field)) {
@@ -1610,6 +1617,7 @@ class _orm implements ArrayAccess
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($field)
     {
         $this->offsetSet($field, null);

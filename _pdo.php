@@ -223,6 +223,7 @@ class _pdo extends PDO
      * @param string $statement
      * @return int
      */
+    #[\ReturnTypeWillChange]
     function exec($statement)
     {
         $sql = $this->translate($statement);
@@ -241,18 +242,18 @@ class _pdo extends PDO
     /**
      * Query wrapper for stats
      *
-     * @param string $statement
      * @return _pdo_statement
      */
-    public function query($statement, $fetch_style = null, $arg1 = null, $arg2 = null)
+    #[\ReturnTypeWillChange]
+    public function query($query, $fetchMode = null, ...$fetchModeArgs)
     {
         try {
             $time = microtime(true);
-            $result = parent::query($statement);
+            $result = parent::query($query);
             $time = microtime(true) - $time;
-            self::log_query($statement, $time);
+            self::log_query($query, $time);
         } catch (PDOException $e) {
-            _pdo::log_query($statement);
+            _pdo::log_query($query);
             throw new _pdo_exception($e);
         }
 
@@ -266,6 +267,7 @@ class _pdo extends PDO
      * @param int $parameter_type
      * @return string
      */
+    #[\ReturnTypeWillChange]
     function quote($value, $parameter_type = null)
     {
         if (is_array($value)) {
@@ -1286,6 +1288,7 @@ class _pdo_statement extends PDOStatement
         //need to declare construct as private
     }
 
+    #[\ReturnTypeWillChange]
     function execute($input_parameters = array())
     {
         $sql = $this->queryString;
