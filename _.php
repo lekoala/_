@@ -1808,7 +1808,12 @@ function _toggle(target) {
             $to = implode(', ', $tmp);
         }
         if (is_array($from)) {
-            $from = $from[0] . ' <' . $from[1] . '>';
+            if (empty($from)) {
+                throw new Exception('Empty email');
+            }
+            $name = $from[0] ?? 'admin';
+            $email = $from[1] ?? 'admin@localhost';
+            $from = $name . ' <' . $email . '>';
         }
 
         // Headers

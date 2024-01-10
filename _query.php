@@ -720,7 +720,7 @@ class _query
             $where_join = ' OR ';
         }
 
-        $options = $this->options;
+        $options = $this->options ?? '';
         if (strpos($options, 'DISTINCT') === false && $this->distinct) {
             $options .= ' DISTINCT';
         }
