@@ -408,9 +408,7 @@ class _
     /**
      * Used as static, cannot instantiate
      */
-    protected function __construct()
-    {
-    }
+    protected function __construct() {}
 
     /**
      * Load config files and override with .local file if exists

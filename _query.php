@@ -487,7 +487,7 @@ class _query
     /**
      * Add a having clause
      *
-     * @param type $columns
+     * @param array $columns
      * @return _query
      */
     function having($columns)
@@ -504,7 +504,7 @@ class _query
     /**
      * Add an order by clause
      *
-     * @param type $columns
+     * @param array $columns
      * @return _query
      */
     function order_by($columns)
