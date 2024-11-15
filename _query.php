@@ -334,7 +334,7 @@ class _query
         //placeholders
         if (strpos($key, '?') !== false) {
             $key = str_replace('?', $quoted_value, $key);
-            // $key = str_replace('?', $this->replace_by_placeholder($value), $key);
+            //			$key = str_replace('?', $this->replace_by_placeholder($value), $key);
             $this->where[] = $key;
             return $this;
         }
@@ -345,10 +345,10 @@ class _query
                 $this->where[] = $key . ' IN (' . $quoted_value . ')';
             } elseif (strpos($value, '%') !== false) {
                 $this->where[] = $key . ' LIKE ' . $quoted_value;
-                // $this->where[] = $key . ' LIKE ' . $this->replace_by_placeholder($value);
+                //				$this->where[] = $key . ' LIKE ' . $this->replace_by_placeholder($value);
             } else {
                 $this->where[] = $key . ' = ' . $quoted_value;
-                // $this->where[] = $key . ' = ' . $this->replace_by_placeholder($value);
+                //				$this->where[] = $key . ' = ' . $this->replace_by_placeholder($value);
             }
         } else {
             if ($operator == 'BETWEEN') {
@@ -358,7 +358,7 @@ class _query
                     $this->where[] = $key . ' ' . $operator . ' (' . $pdo->quote($value) . ')';
                 } else {
                     $this->where[] = $key . ' ' . $operator . ' ' . $quoted_value;
-                    // $this->where[] = $key . ' ' . $operator . ' ' . $this->replace_by_placeholder($value);
+                    //					$this->where[] = $key . ' ' . $operator . ' ' . $this->replace_by_placeholder($value);
                 }
             }
         }
@@ -487,7 +487,7 @@ class _query
     /**
      * Add a having clause
      *
-     * @param array $columns
+     * @param type $columns
      * @return _query
      */
     function having($columns)
@@ -504,7 +504,7 @@ class _query
     /**
      * Add an order by clause
      *
-     * @param array $columns
+     * @param type $columns
      * @return _query
      */
     function order_by($columns)
@@ -536,7 +536,7 @@ class _query
     /**
      * Limit clause
      *
-     * @param array|int|string $value
+     * @param type $value
      * @return _query
      */
     function limit($value)
@@ -796,8 +796,8 @@ class _query
     {
         $pdo = $this->get_pdo();
         $results = $pdo->query($this->build());
-        // $results = $pdo->prepare($this->build());
-        // $results->execute($this->params);
+        //		$results = $pdo->prepare($this->build());
+        //		$results->execute($this->params);
         return $results;
     }
 
@@ -825,6 +825,25 @@ class _query
             return $results->fetchAll($fetch_type);
         }
         return array();
+    }
+
+    function yield_all($fetch_type = null, $fetch_argument = null)
+    {
+        if ($this->fetch_class && $fetch_type == null) {
+            $fetch_type = PDO::FETCH_CLASS;
+            $fetch_argument = $this->fetch_class;
+        }
+        if (!$fetch_type) {
+            $fetch_type = PDO::FETCH_ASSOC;
+        }
+        $results = $this->query();
+        if ($results) {
+            while ($row = $results->fetch($fetch_type)) {
+                yield $row;
+            }
+        }
+        return array();
+
     }
 
     /**
@@ -873,7 +892,7 @@ class _query
     {
         if ($this->fetch_class && $fetch_type === null) {
             $fetch_type = PDO::FETCH_CLASS;
-            // $fetch_argument = $this->fetch_class;
+            //			$fetch_argument = $this->fetch_class;
         }
         if (!$fetch_type) {
             $fetch_type = PDO::FETCH_ASSOC;

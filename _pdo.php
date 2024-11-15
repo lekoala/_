@@ -34,6 +34,8 @@ class _pdo extends PDO
      */
     static $log_to_file;
 
+    static $disable_stats = false;
+
     /**
      * The connection string
      * @var string
@@ -223,6 +225,7 @@ class _pdo extends PDO
      * @param string $statement
      * @return int
      */
+    #[\ReturnTypeWillChange]
     function exec($statement)
     {
         $sql = $this->translate($statement);
@@ -244,7 +247,8 @@ class _pdo extends PDO
      * @param string $statement
      * @return _pdo_statement
      */
-    public function query($statement, $fetch_style = null, $arg1 = null, $arg2 = null)
+    #[\ReturnTypeWillChange]
+    public function query($statement, $fetch_style = null, ...$args)
     {
         try {
             $time = microtime(true);
@@ -266,6 +270,7 @@ class _pdo extends PDO
      * @param int $parameter_type
      * @return string
      */
+    #[\ReturnTypeWillChange]
     function quote($value, $parameter_type = null)
     {
         if (is_array($value)) {
@@ -694,6 +699,9 @@ ORDER BY
      */
     static function stats()
     {
+        if(self::$disable_stats) {
+            return '';
+        }
         $total_queries = count(self::$queries);
         $time = self::$time;
         $html = 'Total queries : ' . $total_queries . ' (' . sprintf('%0.6f', $time) . ' s)';
@@ -970,7 +978,8 @@ HAVING ( COUNT($field) > 1 )";
         }
         //limit
         if ($dbtype == 'mssql') {
-            if (preg_match('/LIMIT[\s]*([0-9]*)([\s]*,[\s]*|[\s]*OFFSET[\s]*)?([0-9]*)?/', $sql, $matches)) {
+            $subject = null;
+            if (preg_match('/LIMIT[\s]*([0-9]*)([\s]*,[\s]*|[\s]*OFFSET[\s]*)?([0-9]*)?/', $subject, $matches)) {
                 $limit = $matches[1];
                 $offset = $matches[3];
                 $sql = str_replace('SELECT ', 'SELECT TOP ' . $limit . ' ', $sql);
@@ -1286,6 +1295,7 @@ class _pdo_statement extends PDOStatement
         //need to declare construct as private
     }
 
+    #[\ReturnTypeWillChange]
     function execute($input_parameters = array())
     {
         $sql = $this->queryString;

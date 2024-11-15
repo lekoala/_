@@ -1,373 +1,313 @@
 /**
  * Ndrscr php toolkit
  * ------------------------
- *
+ *  
  * @author Thomas Portelange <thomas@lekoala.be>
  * @version 0.1
  * @licence http://www.opensource.org/licenses/MIT
  */
 
-$spacing: 10px;
-$padding: 3px;
-$info_color: #3399cc;
-$warning_color: #ff9900;
-$success_color: #00cc33;
-$error_color: #cc0000;
+$spacing : 10px;
+$padding : 3px;
+$info_color : #3399CC;
+$warning_color : #FF9900;
+$success_color : #00CC33;
+$error_color : #CC0000;
 
 /* mini reset */
-html,
-body,
-div,
-form,
-fieldset,
-legend,
-label,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  padding: 0;
+html, body, div, form, fieldset, legend, label, h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	padding: 0;	
 }
 
 table {
-  border-collapse: collapse;
-  border-spacing: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
 }
 
-th,
-td {
-  text-align: left;
-  vertical-align: top;
+th, td {
+	text-align: left;
+	vertical-align: top;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-th,
-td,
-caption {
-  font-weight: normal;
-}
+h1, h2, h3, h4, h5, h6, th, td, caption { font-weight:normal; }
 
-img {
-  border: 0;
-}
+img { border: 0; }
 
 /* semantic nav */
-nav ul,
-nav ol {
-  list-style: none;
-  margin: 0;
+nav ul, nav ol {
+	list-style:none;
+	margin:0;
 }
 
 nav li {
-  margin: 0;
-  float: left;
+	margin:0;
+	float:left;
 }
 
 nav a {
-  display: inline-block;
+	display:inline-block;
 }
 
 /* html 5 compatibility */
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
-  display: block;
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+    display: block
 }
 
 /* clearfix */
 .cf:after {
-  visibility: hidden;
-  display: block;
-  font-size: 0;
-  content: " ";
-  clear: both;
-  height: 0;
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: " ";
+	clear: both;
+	height: 0;
 }
-* html .cf {
-  height: 1%;
-}
-*:first-child + html .cf {
-  min-height: 0;
-}
+* html .cf { height:1%; } 
+*:first-child+html .cf { min-height: 0; }
 
 /* utils */
 .clear {
-  clear: both;
+	clear:both;
 }
 
 .s {
-  margin: $spacing;
+	margin:$spacing;
 }
 
 .vs {
-  margin-top: $spacing;
-  margin-bottom: $spacing;
+	margin-top:$spacing;
+	margin-bottom:$spacing;
 }
 
 .hs {
-  margin-left: $spacing;
-  margin-right: $spacing;
+	margin-left:$spacing;
+	margin-right:$spacing;
 }
 
 .fl {
-  float: left;
+	float:left;
 }
 
 .fr {
-  float: right;
+	float:right;
 }
 
 .ar {
-  text-align: right;
+	text-align:right;
 }
 
 .al {
-  text-align: left;
+	text-align:left;
 }
 
 .lb {
-  background: #fff;
-  min-width: 400px;
-  min-height: 400px;
-  max-height: 600px;
-  overflow-y: scroll;
-  padding: 10px;
-  border: 1px solid #eee;
-  -webkit-box-shadow: 0px 0px 5px 5px #666666;
-  -moz-box-shadow: 0px 0px 5px 5px #666666;
-  box-shadow: 0px 0px 5px 5px #666666;
-  display: none;
+	background:#fff;
+	min-width:400px;
+	min-height:400px;
+	max-height:600px;
+	overflow-y:scroll;
+	padding:10px;
+	border:1px solid #eee;
+	-webkit-box-shadow: 0px 0px 5px 5px #666666;
+	-moz-box-shadow: 0px 0px 5px 5px #666666;
+	box-shadow: 0px 0px 5px 5px #666666;
+	display:none;
 }
 
 /* grid */
 .col {
-  overflow: hidden;
-  float: left;
-  display: inline-block;
+	overflow:hidden;
+	float:left;
+	display:inline-block;
 }
 
 /* scaffold */
-.scaffold tbl,
-.tbl {
-  th {
-    background: #333;
-    color: #fff;
-    font-weight: bold;
-    padding: $padding;
-  }
-  td {
-    border-bottom: 1px solid #eee;
-    padding: $padding;
-  }
+.scaffold tbl, .tbl {
+	th {
+		background:#333;
+		color:#fff;
+		font-weight:bold;
+		padding:$padding;
+	}
+	td {
+		border-bottom:1px solid #eee;
+		padding:$padding;
+	}
 }
 
-.scaffold form,
-.form {
-  label {
-    display: block;
-    margin-top: 9px;
-  }
-  label.inline {
-    display: inline-block;
-    margin: $padding;
-  }
-  input.txt,
-  input[type="text"],
-  input[type="password"],
-  textarea,
-  select,
-  button {
-    border: 1px solid #ccc;
-    padding: $padding;
-    margin: $padding;
-  }
-  input.txt:focus,
-  textarea:focus,
-  select:focus {
-    background: #ffffc9;
-  }
-  fieldset {
-    border: 0;
-    background: #eee;
-    padding: $spacing;
-  }
+.scaffold form, .form {
+	label {
+		display:block;
+		margin-top:9px;		
+	}
+	label.inline {
+		display:inline-block;
+		margin:$padding;
+	}
+	input.txt, input[type="text"], input[type="password"], textarea, select, button {
+		border:1px solid #ccc;
+		padding:$padding;
+		margin:$padding;
+	}
+	input.txt:focus, textarea:focus, select:focus {
+		background:#ffffc9;
+	}
+	fieldset {
+		border:0;
+		background:#eee;
+		padding:$spacing;
+	}
 }
 
 .form-inline {
-  label {
-    clear: both;
-    float: left;
-    width: 100px;
-    padding: $padding;
-    margin: $padding;
-    display: inline-block;
-  }
-  input,
-  textarea,
-  select,
-  button {
-    border: 1px solid #ccc;
-    padding: $padding;
-    margin: $padding;
-  }
-  input.txt,
-  input[type="text"],
-  input[type="password"],
-  textarea,
-  select {
-    float: left;
-    width: 200px;
-  }
-  input.txt:focus,
-  textarea:focus,
-  select:focus {
-    background: #ffffc9;
-  }
+	label {
+		clear:both;
+		float:left;
+		width:100px;
+		padding:$padding;
+		margin:$padding;
+		display:inline-block;
+	}
+	input, textarea, select, button {
+		border:1px solid #ccc;
+		padding:$padding;
+		margin:$padding;
+	}
+	input.txt, input[type="text"], input[type="password"], textarea, select {
+		float:left;
+		width:200px;
+	}
+	input.txt:focus, textarea:focus, select:focus {
+		background:#ffffc9;
+	}
 }
 
 .error {
-  color: $error_color;
+	color:$error_color;
 }
 
 .succes {
-  color: $success_color;
+	color:$success_color;
 }
 
 .info {
-  color: $info_color;
+	color:$info_color;
 }
 
 .warnig {
-  color: $warning_color;
+	color:$warning_color;
 }
 
 .box {
-  padding: $padding;
-  border: 1px solid;
+	padding:$padding;
+	border:1px solid;
 }
 
 .box.error {
-  background-color: lighten($error_color, 30%);
-  border-color: lighten($error_color, 10%);
-  color: darken($error_color, 30%);
+	background-color:lighten($error_color,30%);
+	border-color:lighten($error_color,10%);
+	color:darken($error_color,30%);
 }
 
 .box.success {
-  background-color: lighten($success_color, 30%);
-  border-color: lighten($success_color, 10%);
-  color: darken($success_color, 30%);
+	background-color:lighten($success_color,30%);
+	border-color:lighten($success_color,10%);
+	color:darken($success_color,30%);
 }
 
 .box.info {
-  background-color: lighten($info_color, 30%);
-  border-color: lighten($info_color, 10%);
-  color: darken($info_color, 30%);
+	background-color:lighten($info_color,30%);
+	border-color:lighten($info_color,10%);
+	color:darken($info_color,30%);
 }
 
 .box.warning {
-  background-color: lighten($warning_color, 30%);
-  border-color: lighten($warning_color, 10%);
-  color: darken($warning_color, 30%);
+	background-color:lighten($warning_color,30%);
+	border-color:lighten($warning_color,10%);
+	color:darken($warning_color,30%);
 }
-
+	
 /* jgrowl @link https://bitbucket.org/stanlemon/jgrowl/ */
 .jGrowl {
-  z-index: 9999;
-  color: #fff;
-  font-size: 12px;
-  position: absolute;
-  top: 0px;
-  right: 0px;
+	z-index: 9999;
+	color: #fff;
+	font-size: 12px;
+	position: absolute;
+	top: 0px;
+	right: 0px;
 
-  .jGrowl-notification,
-  .jGrowl-closer {
-    background-color: #000;
-    opacity: 0.85;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)";
-    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=85);
-    zoom: 1;
-    width: 235px;
-    padding: 10px;
-    margin: 10px;
-    font-family: Tahoma, Arial, Helvetica, sans-serif;
-    font-size: 1em;
-    text-align: left;
-    display: none;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-  }
+	.jGrowl-notification, .jGrowl-closer {
+		background-color: #000;
+		opacity: .85;
+		-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=85)"; 
+		filter:	progid:DXImageTransform.Microsoft.Alpha(Opacity=85); 
+		zoom: 1;
+		width: 235px;
+		padding: 10px;
+		margin: 10px;
+		font-family: Tahoma, Arial, Helvetica, sans-serif;
+		font-size: 1em;
+		text-align:	left;
+		display: none;
+		border-radius : 5px;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+	}
 
-  .jGrowl-notification {
-    min-height: 40px;
-
-    .jGrowl-header {
-      font-weight: bold;
-      font-size: 0.85em;
-    }
-
-    .jGrowl-close {
-      z-index: 99;
-      float: right;
-      font-weight: bold;
-      font-size: 1em;
-      cursor: pointer;
-    }
-  }
-
-  .jGrowl-closer {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    font-weight: bold;
-    text-align: center;
-  }
+	.jGrowl-notification {
+		min-height: 40px;
+		
+		.jGrowl-header {
+			font-weight: bold;
+			font-size: .85em;
+		}
+		
+		.jGrowl-close {
+			z-index:99;
+			float: 	right;
+			font-weight: bold;
+			font-size: 1em;
+			cursor: pointer;
+		}
+	}
+	
+	.jGrowl-closer {
+		padding-top:4px;
+		padding-bottom:4px;
+		cursor: pointer;
+		font-size:	.9em;
+		font-weight: bold;
+		text-align: center;
+	}
 }
 
 body > .jGrowl {
-  position: fixed;
+	position: fixed;
 }
 
 @media print {
-  .jGrowl {
-    display: none;
-  }
+	.jGrowl {
+		display: none;
+	}
 }
 
 /* compatibility classes */
 
 //chosen @link http://harvesthq.github.com/chosen/
 .chzn-container-single .chzn-search input {
-  float: none !important;
+	float:none !important;
 }
-._form .chzn-container,
-._inline-form .chzn-container {
-  margin: 3px;
+._form .chzn-container, ._inline-form .chzn-container {
+	margin:3px;
 }
 
 //webshim @link http://afarkas.github.com/webshim/demos/index.html
 html.loading-polyfills body {
-  visibility: hidden;
+	visibility: hidden;
 }
 html.long-loading-polyfills {
-  background-image: url("img/polyfill-loader.gif");
-  background-position: center 240px;
-  background-repeat: no-repeat;
+	background-image: url('img/polyfill-loader.gif');
+	background-position: center 240px;
+	background-repeat: no-repeat;
 }

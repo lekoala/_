@@ -1486,6 +1486,7 @@ class _orm implements ArrayAccess
      */
     function many_many($name, $extra_where = null, $order_by = null)
     {
+
         $pk = static::get_single_pk();
         $pdo = static::get_pdo();
 
@@ -1568,6 +1569,7 @@ class _orm implements ArrayAccess
 
     //ArrayAccess
 
+    #[\ReturnTypeWillChange]
     public function offsetExists($field)
     {
         if ($this->offsetGet($field) !== null) {
@@ -1576,6 +1578,7 @@ class _orm implements ArrayAccess
         return false;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($field)
     {
         $value = null;
@@ -1602,6 +1605,7 @@ class _orm implements ArrayAccess
         return $value;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($field, $value)
     {
         if (property_exists($this, $field)) {
@@ -1611,6 +1615,7 @@ class _orm implements ArrayAccess
         }
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($field)
     {
         $this->offsetSet($field, null);
