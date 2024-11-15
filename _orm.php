@@ -30,6 +30,10 @@ class _orm implements ArrayAccess
      */
     protected $_original = array();
 
+    protected static $table = null;
+    protected static $pk = null;
+    protected static $sort = null;
+
     /**
      * Create a record object
      *
@@ -142,7 +146,7 @@ class _orm implements ArrayAccess
      */
     static function get_table()
     {
-        static $table;
+        $table = static::$table;
         if (empty($table)) {
             $table = strtolower(get_called_class());
         }
@@ -156,7 +160,7 @@ class _orm implements ArrayAccess
      */
     static function get_pk()
     {
-        static $pk;
+        $pk = static::$pk;
         if (empty($pk)) {
             $class = get_called_class();
             if (strpos($class, '_') !== false) {
@@ -195,7 +199,7 @@ class _orm implements ArrayAccess
      */
     static function get_default_sort()
     {
-        static $sort;
+        $sort = static::$sort;
         if (empty($sort)) {
             $pk = static::get_pk();
             array_walk($pk, function (&$item) {
