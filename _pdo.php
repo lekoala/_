@@ -34,8 +34,6 @@ class _pdo extends PDO
      */
     static $log_to_file;
 
-    static $disable_stats = false;
-
     /**
      * The connection string
      * @var string
@@ -244,19 +242,18 @@ class _pdo extends PDO
     /**
      * Query wrapper for stats
      *
-     * @param string $statement
      * @return _pdo_statement
      */
     #[\ReturnTypeWillChange]
-    public function query($statement, $fetch_style = null, ...$args)
+    public function query($query, $fetchMode = null, ...$fetchModeArgs)
     {
         try {
             $time = microtime(true);
-            $result = parent::query($statement);
+            $result = parent::query($query);
             $time = microtime(true) - $time;
-            self::log_query($statement, $time);
+            self::log_query($query, $time);
         } catch (PDOException $e) {
-            _pdo::log_query($statement);
+            _pdo::log_query($query);
             throw new _pdo_exception($e);
         }
 
@@ -699,9 +696,6 @@ ORDER BY
      */
     static function stats()
     {
-        if(self::$disable_stats) {
-            return '';
-        }
         $total_queries = count(self::$queries);
         $time = self::$time;
         $html = 'Total queries : ' . $total_queries . ' (' . sprintf('%0.6f', $time) . ' s)';
@@ -978,8 +972,7 @@ HAVING ( COUNT($field) > 1 )";
         }
         //limit
         if ($dbtype == 'mssql') {
-            $subject = null;
-            if (preg_match('/LIMIT[\s]*([0-9]*)([\s]*,[\s]*|[\s]*OFFSET[\s]*)?([0-9]*)?/', $subject, $matches)) {
+            if (preg_match('/LIMIT[\s]*([0-9]*)([\s]*,[\s]*|[\s]*OFFSET[\s]*)?([0-9]*)?/', $sql, $matches)) {
                 $limit = $matches[1];
                 $offset = $matches[3];
                 $sql = str_replace('SELECT ', 'SELECT TOP ' . $limit . ' ', $sql);

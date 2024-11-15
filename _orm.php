@@ -1065,6 +1065,10 @@ class _orm implements ArrayAccess
         //transform date object
         //TODO: avoid doing that up front, instead it would be faster to analyze schema and transform only if needed
         foreach ($this->_original as $k => $v) {
+            if (!$v) {
+                continue;
+            }
+            $date = $time = $datetime = [];
             preg_match('/^(\d{4}-\d{2}-\d{2})$/', $v, $date);
             preg_match('/^(\d{2}:\d{2}:\d{2})$/', $v, $time);
             preg_match('/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})$/', $v, $datetime);
@@ -1361,17 +1365,16 @@ class _orm implements ArrayAccess
         $relation = $this->is_related($name);
 
         if ($relation) {
-
             switch ($relation['type']) {
                 case 'has_one':
                     $record = $this->has_one($name);
                     if (isset($arguments[0]) && $record) {
-                        if (method_exists($record, $arguments[0])) {
-                            $method = $arguments[0];
-                            return $record->$method();
+                        $arg = $arguments[0];
+                        if (method_exists($record, $arg)) {
+                            return $record->$arg();
                         }
-                        if (isset($record->$arguments[0])) {
-                            return $record->$arguments[0];
+                        if (isset($record->$arg)) {
+                            return $record->$arg;
                         }
                         return false;
                     }
