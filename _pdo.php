@@ -20,19 +20,24 @@ class _pdo extends PDO
      * All queries made
      * @var array
      */
-    static $queries = array();
+    public static $queries = array();
 
     /**
      * Total time
      * @var int
      */
-    static $time = 0;
+    public static $time = 0;
 
     /**
      * Log all queries to this file
      * @var string
      */
-    static $log_to_file;
+    public static $log_to_file;
+
+    /**
+     * @var bool
+     */
+    public static $disable_stats = false;
 
     /**
      * The connection string
