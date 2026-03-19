@@ -25,6 +25,13 @@ class _orm implements ArrayAccess
     protected static $_field_types = array();
 
     /**
+     * Fields that should not be mapped to database columns.
+     * Useful for public helper/alias properties that should not exist in schema.
+     * @var array
+     */
+    protected static $_ignored_fields = array();
+
+    /**
      * Store original data when loaded.
      * @var array
      */
@@ -234,6 +241,14 @@ class _orm implements ArrayAccess
             }
             $map[$name] = $value;
         }
+
+        // Allow models to mark some public properties as "virtual"/non-persistent.
+        if (!empty(static::$_ignored_fields) && is_array(static::$_ignored_fields)) {
+            foreach (static::$_ignored_fields as $ignored) {
+                unset($map[$ignored]);
+            }
+        }
+
         return $map;
     }
 
