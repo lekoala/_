@@ -598,9 +598,16 @@ class _form_date extends _form_input
             'y'  //numeric year: 2 digit
         );
         $replace = array(
-            'dd', 'd', 'DD', 'o',
-            'MM', 'M', 'm', 'mm',
-            'yy', 'y'
+            'dd',
+            'd',
+            'DD',
+            'o',
+            'MM',
+            'M',
+            'm',
+            'mm',
+            'yy',
+            'y'
         );
         foreach ($pattern as &$p) {
             $p = '/' . $p . '/';

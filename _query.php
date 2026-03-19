@@ -843,7 +843,6 @@ class _query
             }
         }
         return array();
-
     }
 
     /**
